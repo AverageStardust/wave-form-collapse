@@ -4,23 +4,25 @@
 #define divCeil(a, b) ((a + b - 1) / b)
 
 BitField field_create(int size) {
-	BitField *bitfield = calloc(1, divCeil(size, FRAME_SIZE));
+	BitField field = calloc(1, divCeil(size, FRAME_SIZE));
 
-	if (bitfield == NULL) {
+	if (field == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create()");
 		exit(1);
 	}
+
+	return field;
 }
 
 BitField field_create_array(int count, int size) {
-	BitField *bitfields = calloc(count, divCeil(size, FRAME_SIZE));
+	BitField fields = calloc(count, divCeil(size, FRAME_SIZE));
 
-	if (bitfields == NULL) {
+	if (fields == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create_array()");
 		exit(1);
 	}
 
-	return bitfields;
+	return fields;
 }
 
 void field_clear(BitField field, int size) {
