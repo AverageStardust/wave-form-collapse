@@ -1,5 +1,22 @@
 #include "world.h"
 
+int world_get(World* world, int x, int y) {
+	Chunk* chunk = world_get_chunk(world, x >> CHUNK_BITS, y >> CHUNK_BITS);
+	if (chunk == NULL) return NULL_TILE;
+
+	return chunk->tiles[(x & CHUNK_MASK) + (y & CHUNK_MASK) * CHUNK_SIZE];
+}
+
+int world_set(World* world, int x, int y, int tile) {
+	Chunk* chunk = world_get_chunk(world, x >> CHUNK_BITS, y >> CHUNK_BITS);
+	if (chunk == NULL) return 0;
+
+	chunk->tiles[(x & CHUNK_MASK) + (y & CHUNK_MASK) * CHUNK_SIZE] = tile;
+	chunk->is_displayed = 0;
+
+	return 1;
+}
+
 Chunk* world_get_chunk(World* world, int x, int y) {
 	uint64_t key = (uint64_t)(unsigned int)x + ((uint64_t)(unsigned int)y << 32);
 	return hashmap_get(world->chunks, key);
@@ -26,23 +43,11 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 		chunk->tiles[i] = NULL_TILE;
 	}
 
+	chunk->is_displayed = 0;
+
 	hashmap_set(world->chunks, key, chunk);
 
 	return chunk;
-}
-
-int world_get(World* world, int x, int y) {
-	Chunk* chunk = world_get_chunk(world, x >> CHUNK_BITS, y >> CHUNK_BITS);
-	if (chunk == NULL) return NULL_TILE;
-	return chunk->tiles[(x & CHUNK_MASK) + (y & CHUNK_MASK) * CHUNK_SIZE];
-}
-
-int world_set(World* world, int x, int y, int tile) {
-	Chunk* chunk = world_get_chunk(world, x >> CHUNK_BITS, y >> CHUNK_BITS);
-	if (chunk == NULL) return 0;
-
-	chunk->tiles[(x & CHUNK_MASK) + (y & CHUNK_MASK) * CHUNK_SIZE] = tile;
-	return 1;
 }
 
 World* world_create() {

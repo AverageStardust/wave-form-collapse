@@ -14,6 +14,7 @@
 
 typedef struct {
 	int* tiles;
+	int is_displayed;
 } Chunk;
 
 typedef struct {
@@ -21,8 +22,9 @@ typedef struct {
 } World;
 
 World* world_create();
+Chunk* world_create_chunk(World* world, int x, int y);
+Chunk* world_get_chunk(World* world, int x, int y);
 int world_set(World* world, int x, int y, int tile);
 int world_get(World* world, int x, int y);
-Chunk* world_create_chunk(World* world, int x, int y);
 
 #endif
