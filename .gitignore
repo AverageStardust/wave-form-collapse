@@ -11,8 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
-public/cmain.js
-public/cmain.wasm
+public/cmodule.js
+public/cmodule.wasm
 
 # Editor directories and files
 .vscode/*

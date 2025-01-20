@@ -1,2 +1,2 @@
-dist/cmodule.js: src/cmain.c
-	emcc -o public/cmain.js $^ -O3 -msimd128 -std=gnu11 -Wall -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s ASSERTIONS=1
+dist/cmodule.js: src/main.c src/world.c src/hashmap.c src/list.c
+	emcc -o public/cmodule.js $^ -O3 -msimd128 -std=gnu11 -Wall -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']" -s "EXPORTED_FUNCTIONS=['_main', '_free']" -s ASSERTIONS=1
