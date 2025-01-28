@@ -5,7 +5,7 @@ declare const runtimeInitialized: boolean;
 
 export var CHUNK_SIZE: number;
 export var free: (ptr: number) => void;
-export var getChunkTiles: (x: number, y: number) => null | Int32Array;
+export var getChunkTiles: (x: number, y: number, markDisplayed: boolean) => null | Int32Array;
 export var getUndisplayedChunks: (x: number, y: number, width: number, height: number) => IntList;
 
 function init() {
@@ -13,9 +13,9 @@ function init() {
 
     free = Module._free;
 
-    const _getChunkTiles = cwrap("get_chunk_tiles", "number", ["number", "number"]);
-    getChunkTiles = (x: number, y: number) => {
-        const tilesPtr = _getChunkTiles(x, y);
+    const _getChunkTiles = cwrap("get_chunk_tiles", "number", ["number", "number", "number"]);
+    getChunkTiles = (x: number, y: number, markDisplayed: boolean) => {
+        const tilesPtr = _getChunkTiles(x, y, Number(markDisplayed));
         if (tilesPtr == 0) return null;
         return new Int32Array(Module.HEAP32.buffer, tilesPtr, CHUNK_SIZE * CHUNK_SIZE);
     }
