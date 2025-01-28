@@ -7,6 +7,9 @@ int main() {
 
 	world = world_create();
 	world_create_chunk(world, 0, 0);
+	world_set(world, 0, 0, 0);
+	world_set(world, 1, 0, 1);
+	world_set(world, 2, 0, 2);
 
 	return 0;
 }
@@ -31,7 +34,7 @@ extern EMSCRIPTEN_KEEPALIVE IntList* get_undisplayed_chunks(int x, int y, int wi
 	return list;
 }
 
-extern EMSCRIPTEN_KEEPALIVE int* read_chunk_tiles(int x, int y, int mark_displayed) {
+extern EMSCRIPTEN_KEEPALIVE int* get_chunk_tiles(int x, int y, int mark_displayed) {
 	Chunk* chunk = world_get_chunk(world, x, y);
 	if (chunk == NULL) return NULL;
 

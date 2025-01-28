@@ -1,12 +1,50 @@
 import { IntList } from "./list";
 
-export const free = cwrap("_free", null, ["number"]);
-export const getChunkSize = cwrap("get_chunk_size", "number", []);
+declare const Module: EmscriptenModule;
+declare const runtimeInitialized: boolean;
 
-const getUndisplayedChunksRaw = cwrap("get_undisplayed_chunks", "number", ["number", "number", "number", "number"]);
+export var CHUNK_SIZE: number;
+export var free: (ptr: number) => void;
+export var getChunkTiles: (x: number, y: number) => null | Int32Array;
+export var getUndisplayedChunks: (x: number, y: number, width: number, height: number) => IntList;
 
-export function getUndisplayedChunks(x: number, y: number, width: number, height: number) {
-    return new IntList(getUndisplayedChunksRaw(x, y, width, height));
+function init() {
+    CHUNK_SIZE = Object.freeze(ccall("get_chunk_size", "number", [], []));
+
+    free = Module._free;
+
+    const _getChunkTiles = cwrap("get_chunk_tiles", "number", ["number", "number"]);
+    getChunkTiles = (x: number, y: number) => {
+        const tilesPtr = _getChunkTiles(x, y);
+        if (tilesPtr == 0) return null;
+        return new Int32Array(Module.HEAP32.buffer, tilesPtr, CHUNK_SIZE * CHUNK_SIZE);
+    }
+
+    const _getUndisplayedChunks = cwrap("get_undisplayed_chunks", "number", ["number", "number", "number", "number"]);
+    getUndisplayedChunks = (x: number, y: number, width: number, height: number) => {
+        const listPtr = _getUndisplayedChunks(x, y, width, height);
+        return new IntList(listPtr);
+    }
 }
 
-export const readChunkTiles = cwrap("get_undisplayed_chunks", "number", ["number", "number"]);
+export function moduleReady() {
+    return new Promise<void>((resolve) => {
+        if ("Module" in window) {
+            onModuleLoaded();
+        } else {
+            const script = document.querySelector<HTMLScriptElement>("#cmodule")!;
+            script.addEventListener("load", onModuleLoaded);
+        }
+
+        function onModuleLoaded() {
+            if (runtimeInitialized) {
+                resolve();
+            } else {
+                Module.addOnInit(resolve);
+            }
+        }
+    })
+}
+
+await moduleReady();
+init();
