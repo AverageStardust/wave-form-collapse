@@ -8,7 +8,9 @@ export var free: (ptr: number) => void;
 export var getChunkTiles: (x: number, y: number, markDisplayed: boolean) => null | Int32Array;
 export var getUndisplayedChunks: (x: number, y: number, width: number, height: number) => IntList;
 
-function init() {
+export async function init() {
+    await moduleReady();
+
     CHUNK_SIZE = Object.freeze(ccall("get_chunk_size", "number", [], []));
 
     free = Module._free;
@@ -45,6 +47,3 @@ export function moduleReady() {
         }
     })
 }
-
-await moduleReady();
-init();

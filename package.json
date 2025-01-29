@@ -10,10 +10,9 @@
   },
   "devDependencies": {
     "@types/emscripten": "^1.39.13",
+    "twgl.js": "^5.5.4",
     "typescript": "~5.6.2",
-    "vite": "^6.0.5"
-  },
-  "dependencies": {
+    "vite": "^6.0.5",
     "vite-plugin-child-process": "^1.0.6"
   }
 }

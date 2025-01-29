@@ -1,11 +1,22 @@
-import { getChunkTiles, getUndisplayedChunks } from "./cwrapper";
+import { init as initWrapper } from "./cwrapper";
+import { Renderer } from "./render";
 
-const appElement = document.querySelector<HTMLDivElement>('#app')!
-appElement.innerText = "hello world\n";
+const canvasElement = document.querySelector<HTMLCanvasElement>("#canvas")!
+const renderer = new Renderer(canvasElement);
 
-const intList = getUndisplayedChunks(0, 0, 2, 2);
-for (let i = 0; i < intList.length; i += 2) {
-    const x = intList.at(i), y = intList.at(i + 1);
-    appElement.append(String(getChunkTiles(x, y, true)));
+async function init() {
+    await Promise.all([
+        renderer.load(),
+        initWrapper()]);
+
+    renderer.start();
 }
-intList.free();
+
+init();
+
+// const intList = getUndisplayedChunks(0, 0, 2, 2);
+// for (let i = 0; i < intList.length; i += 2) {
+//     const x = intList.at(i), y = intList.at(i + 1);
+//     //getChunkTiles(x, y, true);
+// }
+// intList.free();

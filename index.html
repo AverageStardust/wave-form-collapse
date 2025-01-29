@@ -6,12 +6,35 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wave Form Collapse</title>
+
+    <style>
+        html,
+        body,
+        #app {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex: 1;
+        }
+
+        #canvas {
+            flex: 1;
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="app"></div>
+    <div id="app">
+        <canvas id="canvas"></canvas>
+    </div>
+
     <script async type="text/javascript" src="/cmodule.js" id="cmodule"></script>
     <script async type="module" src="/src/main.ts"></script>
+    <link rel="preload" href="cmodule.wasm" as="fetch" />
+    <link rel="preload" href="world.frag" as="fetch" />
+    <link rel="preload" href="world.vert" as="fetch" />
 </body>
 
 </html>
