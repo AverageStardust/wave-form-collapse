@@ -1,10 +1,12 @@
 import * as twgl from "twgl.js";
+import { Camera } from "./camera";
 
 export class Renderer {
     canvas: HTMLCanvasElement
     gl: WebGLRenderingContext
     programInfo!: twgl.ProgramInfo
     bufferInfo: twgl.BufferInfo
+    camera: Camera
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -17,6 +19,8 @@ export class Renderer {
             position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0] //quad
         };
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+
+        this.camera = new Camera();
     }
 
     async load() {
@@ -37,8 +41,8 @@ export class Renderer {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
         const uniforms = {
-            cameraPosition: [0, 0],
-            cameraZoom: 1 / 64,
+            cameraPosition: this.camera.position.array,
+            cameraZoom: this.camera.zoom,
             resolution: [this.canvas.width, this.canvas.height],
         }
 
