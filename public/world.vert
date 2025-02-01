@@ -1,6 +1,8 @@
-attribute vec3 position;
+#version 300 es
 
-varying vec2 screenCoord;
+in vec3 position;
+
+out vec2 screenCoord;
 
 void main() {
     screenCoord = position.xy * 0.5;

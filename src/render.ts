@@ -11,8 +11,8 @@ export class Renderer {
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
 
-        const gl = canvas.getContext("webgl");
-        if (gl === null) throw Error("WEBGL not supported");
+        const gl = canvas.getContext("webgl2");
+        if (!gl) throw Error("WEBGL2 not supported");
         this.gl = gl;
 
         const arrays = {
