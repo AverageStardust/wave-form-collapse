@@ -23,7 +23,7 @@ Chunk* world_get_chunk(World* world, int x, int y) {
 }
 
 Chunk* world_create_chunk(World* world, int x, int y) {
-	uint64_t key = (uint64_t)x + ((uint64_t)y << 32);
+	uint64_t key = (uint64_t)(unsigned int)x + ((uint64_t)(unsigned int)y << 32);
 
 	Chunk* chunk = malloc(sizeof(Chunk));
 
