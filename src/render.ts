@@ -40,9 +40,11 @@ export class Renderer {
         twgl.resizeCanvasToDisplaySize(this.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+        const zoom = this.camera.size / Math.min(this.canvas.width, this.canvas.height);
+
         const uniforms = {
             cameraPosition: this.camera.position.array,
-            cameraZoom: this.camera.zoom,
+            cameraZoom: zoom,
             resolution: [this.canvas.width, this.canvas.height],
         }
 
