@@ -75,7 +75,7 @@ void hashmap_grow_bucket(Hashmap* hashmap, HashmapNode* node, int old_size, int 
 	if (node == NULL) return;
 	hashmap_grow_bucket(hashmap, node->next, old_size, new_size);
 
-	int hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)node->key);
+	uint32_t hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)&node->key);
 	if (hash % new_size == hash % old_size) return;
 
 	hashmap_remove_node(hashmap, node->key, hash % old_size);
@@ -125,7 +125,7 @@ void hashmap_map(Hashmap* hashmap, void* (*map_func)(uint64_t key, void* value))
 }
 
 void* hashmap_delete(Hashmap* hashmap, uint64_t key) {
-	int hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)key);
+	uint32_t hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)&key);
 	HashmapNode* node = hashmap_remove_node(hashmap, key, hash % hashmap->size);
 	void* value = node->value;
 
@@ -135,7 +135,7 @@ void* hashmap_delete(Hashmap* hashmap, uint64_t key) {
 }
 
 void* hashmap_get(Hashmap* hashmap, uint64_t key) {
-	int hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)key);
+	uint32_t hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)&key);
 	int index = hash % hashmap->size;
 
 	HashmapNode* node = hashmap->nodes[index];
@@ -152,7 +152,7 @@ void* hashmap_get(Hashmap* hashmap, uint64_t key) {
 }
 
 void* hashmap_set(Hashmap* hashmap, uint64_t key, void* value) {
-	int hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)key);
+	uint32_t hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)&key);
 	int index = hash % hashmap->size;
 
 	if (hashmap->nodes[index] == NULL) {
