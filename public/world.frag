@@ -22,7 +22,8 @@ vec4 sampleWorld(vec2 position) {
     int id = texelFetch(worldTex, ivec2(floor(position)) % worldTexSize, 0).r;
     if (id < 0) return vec4(0.0);
     
-    vec2 tileCoord = vec2(id % tilesetWidth, id / tilesetWidth) + fract(position);
+    vec2 tileSubPosition = vec2(fract(position.x), 1.0 - fract(position.y));
+    vec2 tileCoord = vec2(id % tilesetWidth, id / tilesetWidth) + tileSubPosition;
     return texelFetch(tilesetTex, ivec2(tileCoord * float(tilesetTileSize)), 0);
 }
 
