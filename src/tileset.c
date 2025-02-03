@@ -7,7 +7,7 @@ void tileset_free(Tileset* tileset) {
 }
 
 void tileset_find_tile_edge(Tileset* tileset, BitField tile_field, BitField edge_field, int direction) {
-	field_clear(tileset->edge_field_size, edge_field);
+	field_clear(edge_field, tileset->edge_field_size);
 
 	// look up each byte in the tile_field, combine to find the edge_field for the tile
 	for (int i = 0; i < tileset->tile_field_size * 16; i++) {
@@ -15,7 +15,7 @@ void tileset_find_tile_edge(Tileset* tileset, BitField tile_field, BitField edge
 		if (byte == 0) continue;  // no tiles set
 		BitField edge_table_byte = tileset->edge_table + i * tileset->edge_table_byte_size;
 		BitField byte_edge_field = edge_table_byte + ((byte * 4 + direction) * tileset->edge_field_size);
-		field_or(tileset->edge_field_size, edge_field, byte_edge_field);
+		field_or(edge_field, byte_edge_field, tileset->edge_field_size);
 	}
 }
 
@@ -30,10 +30,10 @@ void tileset_constrain_tile(Tileset* tileset, BitField tile_field, BitField edge
 		const uint8_t byte = field_get_byte(edge_field, i);
 		if (byte == 0) continue;  // no edges set
 		BitField byte_tile_field = table + (i * 256 + byte) * tileset->tile_field_size;
-		field_or(tileset->tile_field_size, constraint, byte_tile_field);
+		field_or(constraint, byte_tile_field, tileset->tile_field_size);
 	}
 
-	field_and(tileset->tile_field_size, tile_field, constraint);
+	field_and(tile_field, constraint, tileset->tile_field_size);
 }
 
 void tileset_add_edge_table_entry(Tileset* tileset, int tile, int right_edge, int top_edge, int left_edge, int bottom_edge) {
@@ -87,9 +87,7 @@ void tileset_add_tile(Tileset* tileset, int tile, int right_edge, int top_edge, 
 }
 
 Tileset* tileset_create(int edge_field_size, int tile_field_size) {
-	int edge_field_bytes = sizeof(BitFieldFrame) * edge_field_size;
-	int tile_field_bytes = sizeof(BitFieldFrame) * tile_field_size;
-	int tile_table_direction_size = edge_field_bytes * 256 * tile_field_size;
+	int tile_table_direction_size = edge_field_size * 256 * tile_field_size;
 	int edge_table_byte_size = 256 * 4 * edge_field_size;
 
 	Tileset* tileset = malloc(sizeof(Tileset));
@@ -100,7 +98,7 @@ Tileset* tileset_create(int edge_field_size, int tile_field_size) {
 	}
 
 	tileset->tile_table = calloc(4 * tile_table_direction_size, sizeof(BitFieldFrame));
-	tileset->edge_table = calloc(tile_field_bytes * edge_table_byte_size, sizeof(BitFieldFrame));
+	tileset->edge_table = calloc(tile_field_size * edge_table_byte_size, sizeof(BitFieldFrame));
 
 	if (tileset->tile_table == NULL || tileset->edge_table == NULL) {
 		fprintf(stderr, "Failed to allocate memory: tileset_create()");
