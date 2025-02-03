@@ -7,8 +7,8 @@ void distribution_free(Distribution* distribution) {
 	free(distribution);
 }
 
-int distributions_get_shannon_entropy(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
-	int weight_sum = 0, weight_log_weight = 0;
+Entropy distributions_get_shannon_entropy(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
+	Entropy weight_sum = 0, weight_log_weight = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
 		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
@@ -23,7 +23,7 @@ int distributions_get_shannon_entropy(int distribution_count, Distribution* dist
 	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
 }
 
-int distribution_get_shannon_entropy(Distribution* distribution, BitField field) {
+Entropy distribution_get_shannon_entropy(Distribution* distribution, BitField field) {
 	return distributions_get_shannon_entropy(1, (Distribution*[]){distribution}, field);
 }
 
@@ -63,9 +63,9 @@ int distribution_pick_random_unweighted(int distribution_count, Distribution* di
 }
 
 int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitField field, int byte) {
-	int weight_sum = distribution->weight_table[byte * 256 + field_get_byte(field, byte)];
+	Entropy weight_sum = distribution->weight_table[byte * 256 + field_get_byte(field, byte)];
 
-	int roll = rand() % weight_sum;
+	Entropy roll = rand() % weight_sum;
 	weight_sum = 0;
 
 	for (int i = byte * 8;;) {
@@ -82,7 +82,7 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 }
 
 int distributions_pick_random(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
-	int weight_sum = 0;
+	Entropy weight_sum = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
 		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
@@ -93,7 +93,7 @@ int distributions_pick_random(int distribution_count, Distribution* distribution
 	if (weight_sum == 0)
 		return distribution_pick_random_unweighted(distribution_count, distributions, field);
 
-	int roll = rand() % weight_sum;
+	Entropy roll = rand() % weight_sum;
 	weight_sum = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
@@ -113,16 +113,16 @@ int distribution_pick_random(Distribution* distribution, BitField field) {
 	return distributions_pick_random(1, (Distribution*[]){distribution}, field);
 }
 
-void distribution_add_tile(Distribution* distribution, int tile, int weight) {
+void distribution_add_tile(Distribution* distribution, int tile, Entropy weight) {
 	distribution->weights[tile] = weight;
 
 	int tile_byte_index = tile / 8;
 	int tile_bit_index = tile % 8;
 
-	int* weight_table = distribution->weight_table + tile_byte_index * 256;
-	int* weight_log_weight_table = distribution->weight_log_weight_table + tile_byte_index * 256;
+	Entropy* weight_table = distribution->weight_table + tile_byte_index * 256;
+	Entropy* weight_log_weight_table = distribution->weight_log_weight_table + tile_byte_index * 256;
 
-	int weight_log_weight = weight * (int)(logf(weight) * ENTROPY_ONE_POINT);
+	Entropy weight_log_weight = weight * (int)(logf(weight) * ENTROPY_ONE_POINT);
 
 	// iterate though all byte values with tile_bit_index set
 	for (int i = 0; i < 256; i += (2 << tile_bit_index)) {
@@ -142,9 +142,9 @@ Distribution* distribution_create(int tile_field_size) {
 		exit(1);
 	}
 
-	distribution->weights = calloc(tile_field_size * 256, sizeof(int));
-	distribution->weight_table = calloc(tile_field_size * 256, sizeof(int));
-	distribution->weight_log_weight_table = calloc(tile_field_size * 256, sizeof(int));
+	distribution->weights = calloc(tile_field_size * 256, sizeof(Entropy));
+	distribution->weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
+	distribution->weight_log_weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
 
 	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_create()");
