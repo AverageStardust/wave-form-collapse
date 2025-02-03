@@ -15,7 +15,6 @@ typedef struct {
 	int* weight_table;
 	int* weight_log_weight_table;
 	int tile_count;
-	int tile_field_bytes;
 	int tile_field_size;
 } Distribution;
 

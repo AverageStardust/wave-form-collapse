@@ -11,7 +11,7 @@ int distributions_get_shannon_entropy(int distribution_count, Distribution* dist
 	int weight_sum = 0, weight_log_weight = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_bytes; j++) {
+		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
 			int index = j * 256 + field_get_byte(field, j);
 			weight_sum += distributions[i]->weight_table[index];
 			weight_log_weight += distributions[i]->weight_log_weight_table[index];
@@ -32,12 +32,13 @@ int distribution_pick_random_unweighted(int distribution_count, Distribution* di
 
 	for (int i = 0; i < distribution_count; i++) {
 		Distribution* distribution = distributions[i];
-		for (int i = 0;;) {
-			int tile = field_get_rightmost_bit(distribution->tile_field_size, field, i);
+
+		for (int j = 0;;) {
+			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
 			if (tile == -1) break;
 
 			tile_count++;
-			i = tile + 1;
+			j = tile + 1;
 		}
 	}
 
@@ -45,13 +46,15 @@ int distribution_pick_random_unweighted(int distribution_count, Distribution* di
 	tile_count = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
-		for (int i = 0;;) {
-			int tile = field_get_rightmost_bit(distributions[i]->tile_field_size, field, i);
+		Distribution* distribution = distributions[i];
+
+		for (int j = 0;;) {
+			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
 			if (tile == -1) break;
 
 			tile_count++;
 			if (tile_count > roll) return tile;
-			i = tile + 1;
+			j = tile + 1;
 		}
 	}
 
@@ -66,7 +69,7 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 	weight_sum = 0;
 
 	for (int i = byte * 8;;) {
-		int tile = field_get_rightmost_bit(distribution->tile_field_size, field, i);
+		int tile = field_get_rightmost_bit(field, distribution->tile_field_size, i);
 		if (tile == -1 || tile >= byte * 8 + 8) break;
 
 		weight_sum += distribution->weights[tile];
@@ -82,7 +85,7 @@ int distributions_pick_random(int distribution_count, Distribution* distribution
 	int weight_sum = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_bytes; j++) {
+		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
 			weight_sum += distributions[i]->weight_table[j * 256 + field_get_byte(field, j)];
 		}
 	}
@@ -94,7 +97,7 @@ int distributions_pick_random(int distribution_count, Distribution* distribution
 	weight_sum = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_bytes; j++) {
+		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
 			weight_sum += distributions[i]->weight_table[j * 256 + field_get_byte(field, j)];
 
 			if (weight_sum > roll)
@@ -132,8 +135,6 @@ void distribution_add_tile(Distribution* distribution, int tile, int weight) {
 }
 
 Distribution* distribution_create(int tile_field_size) {
-	int tile_field_bytes = sizeof(BitFieldFrame) * tile_field_size;
-
 	Distribution* distribution = malloc(sizeof(Distribution));
 
 	if (distribution == NULL) {
@@ -141,9 +142,9 @@ Distribution* distribution_create(int tile_field_size) {
 		exit(1);
 	}
 
-	distribution->weights = calloc(tile_field_bytes * 256, sizeof(int));
-	distribution->weight_table = calloc(tile_field_bytes * 256, sizeof(int));
-	distribution->weight_log_weight_table = calloc(tile_field_bytes * 256, sizeof(int));
+	distribution->weights = calloc(tile_field_size * 256, sizeof(int));
+	distribution->weight_table = calloc(tile_field_size * 256, sizeof(int));
+	distribution->weight_log_weight_table = calloc(tile_field_size * 256, sizeof(int));
 
 	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_create()");
@@ -151,7 +152,6 @@ Distribution* distribution_create(int tile_field_size) {
 	}
 
 	distribution->tile_count = 0;
-	distribution->tile_field_bytes = tile_field_bytes;
 	distribution->tile_field_size = tile_field_size;
 
 	return distribution;
