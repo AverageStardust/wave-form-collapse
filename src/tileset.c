@@ -23,7 +23,7 @@ void tileset_constrain_tile(Tileset* tileset, BitField tile_field, BitField edge
 	BitField table = tileset->tile_table;
 	table += tileset->tile_table_direction_size * direction;
 
-	v128_t constraint[tileset->tile_field_size];
+	BitFieldFrame constraint[(tileset->tile_field_size + sizeof(BitFieldFrame) - 1) / sizeof(BitFieldFrame)];
 
 	// look up each byte in the edge_field, combine to find the constraint on tile_field
 	for (int i = 0; i < tileset->edge_field_size * 16; i++) {
