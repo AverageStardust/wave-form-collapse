@@ -25,33 +25,33 @@ BitField field_create_array(int count, int size) {
 	return fields;
 }
 
+void field_copy(BitField field_dest, BitField field_src, int size) {
+	memcpy(field_dest, field_src, (size + FRAME_SIZE - 1) / FRAME_SIZE);
+}
+
 void field_clear(BitField field, int size) {
-	uint64_t *words = (uint64_t *)field;
-
-	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
-		words[i] = 0;
-	}
+	memset(field, 0, (size + FRAME_SIZE - 1) / FRAME_SIZE);
 }
 
-void field_or(BitField field_a, BitField field_b, int size) {
+void field_or(BitField field_dest, BitField field_src, int size) {
 	v128_t a, b;
 
 	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
-		a = wasm_v128_load(field_a + i);
-		b = wasm_v128_load(field_b + i);
+		a = wasm_v128_load(field_dest + i);
+		b = wasm_v128_load(field_src + i);
 		a = wasm_v128_or(a, b);
-		wasm_v128_store(field_a + i, a);
+		wasm_v128_store(field_dest + i, a);
 	}
 }
 
-void field_and(BitField field_a, BitField field_b, int size) {
+void field_and(BitField field_dest, BitField field_src, int size) {
 	v128_t a, b;
 
 	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
-		a = wasm_v128_load(field_a + i);
-		b = wasm_v128_load(field_b + i);
+		a = wasm_v128_load(field_dest + i);
+		b = wasm_v128_load(field_src + i);
 		a = wasm_v128_and(a, b);
-		wasm_v128_store(field_a + i, a);
+		wasm_v128_store(field_dest + i, a);
 	}
 }
 
