@@ -29,10 +29,10 @@ typedef struct {
 //   - to find minimum entropy with a heap
 // these two data structures are updated in sync
 
-Entropies* create_entropies(int maxWidth, int maxHeight);
+Entropies* entropies_create(int maxWidth, int maxHeight);
 void entropies_initalize_from_tiles(Entropies* entropies, int width, int height);
 GenerationTile entropies_collapse_least(Entropies* entropies);
 void entropies_update_entropy(Entropies* entropies, GenerationTile key, Entropy value);
-void free_entropies(Entropies* entropies);
+void entropies_free(Entropies* entropies);
 
 #endif

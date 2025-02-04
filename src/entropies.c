@@ -7,7 +7,7 @@
 //   - to find minimum entropy with a heap
 // these two data structures are updated in sync
 
-void free_entropies(Entropies* entropies) {
+void entropies_free(Entropies* entropies) {
 	free(entropies->tiles);
 	free(entropies->tile_nodes);
 
@@ -156,11 +156,11 @@ void entropies_initalize_from_tiles(Entropies* entropies, int width, int height)
 	entropies_heapify(entropies);
 }
 
-Entropies* create_entropies(int maxWidth, int maxHeight) {
+Entropies* entropies_create(int maxWidth, int maxHeight) {
 	Entropies* entropies = malloc(sizeof(Entropies));
 
 	if (entropies == NULL) {
-		fprintf(stderr, "Failed to allocate memory: create_entropies()");
+		fprintf(stderr, "Failed to allocate memory: entropies_create()");
 		exit(1);
 	}
 
@@ -173,7 +173,7 @@ Entropies* create_entropies(int maxWidth, int maxHeight) {
 	entropies->values = malloc(sizeof(int) * maxWidth * maxHeight);
 
 	if (entropies->tiles == NULL || entropies->tile_nodes == NULL || entropies->keys == NULL || entropies->values == NULL) {
-		fprintf(stderr, "Failed to allocate memory: create_entropies()");
+		fprintf(stderr, "Failed to allocate memory: entropies_create()");
 		exit(1);
 	}
 
