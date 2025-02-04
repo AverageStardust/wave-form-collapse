@@ -15,7 +15,7 @@ typedef struct {
 	Entropy* weights;
 	Entropy* weight_table;
 	Entropy* weight_log_weight_table;
-	int tile_count;
+	BitField all_tiles;
 	int tile_field_size;
 } Distribution;
 
@@ -25,6 +25,7 @@ int distribution_pick_random(Distribution* distribution, BitField field);
 int distributions_pick_random(int distribution_count, Distribution* distributions[distribution_count], BitField field);
 Entropy distribution_get_shannon_entropy(Distribution* distribution, BitField field);
 Entropy distributions_get_shannon_entropy(int distribution_count, Distribution* distributions[distribution_count], BitField field);
+void distributions_set_all_tiles(int distribution_count, Distribution* distributions[distribution_count], BitField field);
 void distribution_free(Distribution* distribution);
 
 #endif

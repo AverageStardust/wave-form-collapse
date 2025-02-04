@@ -7,14 +7,23 @@ void distribution_free(Distribution* distribution) {
 	free(distribution);
 }
 
+void distributions_set_all_tiles(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
+	for (int i = 0; i < distribution_count; i++) {
+		Distribution* distribution = distributions[i];
+		field_or(field, distribution->all_tiles, distribution->tile_field_size);
+	}
+}
+
 Entropy distributions_get_shannon_entropy(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
 	Entropy weight_sum = 0, weight_log_weight = 0;
 
 	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
+		Distribution* distribution = distributions[i];
+
+		for (int j = 0; j < distribution->tile_field_size; j++) {
 			int index = j * 256 + field_get_byte(field, j);
-			weight_sum += distributions[i]->weight_table[index];
-			weight_log_weight += distributions[i]->weight_log_weight_table[index];
+			weight_sum += distribution->weight_table[index];
+			weight_log_weight += distribution->weight_log_weight_table[index];
 		}
 	}
 
@@ -132,6 +141,8 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 			weight_log_weight_table[byte] += weight_log_weight;
 		}
 	}
+
+	field_set_bit(distribution->all_tiles, tile);
 }
 
 Distribution* distribution_create(int tile_field_size) {
@@ -145,13 +156,13 @@ Distribution* distribution_create(int tile_field_size) {
 	distribution->weights = calloc(tile_field_size * 256, sizeof(Entropy));
 	distribution->weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
 	distribution->weight_log_weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
+	distribution->all_tiles = calloc(1, tile_field_size);
 
-	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL) {
+	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL || distribution->all_tiles == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_create()");
 		exit(1);
 	}
 
-	distribution->tile_count = 0;
 	distribution->tile_field_size = tile_field_size;
 
 	return distribution;
