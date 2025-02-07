@@ -7,9 +7,6 @@
 #include "bitfield.h"
 #include "hashmap.h"
 
-#define CHUNK_BITS 4
-#define CHUNK_SIZE (1 << CHUNK_BITS)
-#define CHUNK_MASK (CHUNK_SIZE - 1)
 #define NULL_TILE -1
 
 typedef struct {
@@ -19,6 +16,9 @@ typedef struct {
 
 typedef struct {
 	Hashmap* chunks;
+	int chunk_size;
+	int chunk_bits;
+	int chunk_mask;
 } World;
 
 World* world_create();

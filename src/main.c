@@ -5,7 +5,8 @@ World* world;
 int main() {
 	srand(time(0));
 
-	world = world_create();
+	world = world_create(16);
+
 	world_create_chunk(world, 0, 0);
 	world_set(world, 0, 0, 0);
 	world_set(world, 1, 0, 1);
@@ -15,7 +16,7 @@ int main() {
 }
 
 extern EMSCRIPTEN_KEEPALIVE int get_chunk_size() {
-	return CHUNK_SIZE;
+	return world->chunk_size;
 }
 
 extern EMSCRIPTEN_KEEPALIVE IntList* get_undisplayed_chunks(int x, int y, int width, int height) {
@@ -43,8 +44,3 @@ extern EMSCRIPTEN_KEEPALIVE int* get_chunk_tiles(int x, int y, int mark_displaye
 
 	return chunk->tiles;
 }
-
-// create chunk, world
-// create renderer
-// create entropy heap
-// create generator
