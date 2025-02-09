@@ -1,10 +1,11 @@
 #include "bitfield.h"
 
 #define FRAME_SIZE sizeof(BitFieldFrame)
-#define divCeil(a, b) ((a + b - 1) / b)
+#define fieldStorageFrameSize(a) ((a + FRAME_SIZE - 1) / FRAME_SIZE)
+#define fieldStorageByteSize(a) (fieldStorageFrameSize(a) * FRAME_SIZE)
 
 BitField field_create(int size) {
-	BitField field = calloc(1, divCeil(size, FRAME_SIZE));
+	BitField field = calloc(1, fieldStorageSize(size));
 
 	if (field == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create()");
@@ -14,8 +15,8 @@ BitField field_create(int size) {
 	return field;
 }
 
-BitField field_create_array(int count, int size) {
-	BitField fields = calloc(count, divCeil(size, FRAME_SIZE));
+BitField field_create_array(int count, int elm_size) {
+	BitField fields = calloc(count, fieldStorageSize(elm_size));
 
 	if (fields == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create_array()");
@@ -23,6 +24,10 @@ BitField field_create_array(int count, int size) {
 	}
 
 	return fields;
+}
+
+BitField field_index_array(BitField array, int elm_size, int index) {
+	return &array[fieldStorageFrameSize(elm_size) * index];
 }
 
 void field_copy(BitField field_dest, BitField field_src, int size) {
