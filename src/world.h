@@ -21,7 +21,7 @@ typedef struct {
 	int chunk_mask;
 } World;
 
-World* world_create();
+World* world_create(uint32_t chunk_size);
 Chunk* world_create_chunk(World* world, int x, int y);
 Chunk* world_get_chunk(World* world, int x, int y);
 int world_set(World* world, int x, int y, int tile);
