@@ -7,18 +7,18 @@ void distribution_free(Distribution* distribution) {
 	free(distribution);
 }
 
-void distributions_set_all_tiles(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
-	for (int i = 0; i < distribution_count; i++) {
-		Distribution* distribution = distributions[i];
+void distributions_set_all_tiles(DistributionSet distSet, BitField field) {
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
 		field_or(field, distribution->all_tiles, distribution->tile_field_size);
 	}
 }
 
-Entropy distributions_get_shannon_entropy(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
+Entropy distributions_get_shannon_entropy(DistributionSet distSet, BitField field) {
 	Entropy weight_sum = 0, weight_log_weight = 0;
 
-	for (int i = 0; i < distribution_count; i++) {
-		Distribution* distribution = distributions[i];
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
 
 		for (int j = 0; j < distribution->tile_field_size; j++) {
 			int index = j * 256 + field_get_byte(field, j);
@@ -32,15 +32,11 @@ Entropy distributions_get_shannon_entropy(int distribution_count, Distribution* 
 	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
 }
 
-Entropy distribution_get_shannon_entropy(Distribution* distribution, BitField field) {
-	return distributions_get_shannon_entropy(1, (Distribution*[]){distribution}, field);
-}
-
-int distribution_pick_random_unweighted(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
+int distribution_pick_random_unweighted(DistributionSet distSet, BitField field) {
 	int tile_count = 0;
 
-	for (int i = 0; i < distribution_count; i++) {
-		Distribution* distribution = distributions[i];
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
@@ -54,8 +50,8 @@ int distribution_pick_random_unweighted(int distribution_count, Distribution* di
 	int roll = rand() % tile_count;
 	tile_count = 0;
 
-	for (int i = 0; i < distribution_count; i++) {
-		Distribution* distribution = distributions[i];
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
@@ -90,36 +86,36 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 	exit(1);
 }
 
-int distributions_pick_random(int distribution_count, Distribution* distributions[distribution_count], BitField field) {
+int distributions_pick_random(DistributionSet distSet, BitField field) {
 	Entropy weight_sum = 0;
 
-	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
-			weight_sum += distributions[i]->weight_table[j * 256 + field_get_byte(field, j)];
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
+
+		for (int j = 0; j < distribution->tile_field_size; j++) {
+			weight_sum += distribution->weight_table[j * 256 + field_get_byte(field, j)];
 		}
 	}
 
 	if (weight_sum == 0)
-		return distribution_pick_random_unweighted(distribution_count, distributions, field);
+		return distribution_pick_random_unweighted(distSet, field);
 
 	Entropy roll = rand() % weight_sum;
 	weight_sum = 0;
 
-	for (int i = 0; i < distribution_count; i++) {
-		for (int j = 0; j < distributions[i]->tile_field_size; j++) {
-			weight_sum += distributions[i]->weight_table[j * 256 + field_get_byte(field, j)];
+	for (int i = 0; i < distSet.length; i++) {
+		Distribution* distribution = distSet.distributions[i];
+
+		for (int j = 0; j < distribution->tile_field_size; j++) {
+			weight_sum += distribution->weight_table[j * 256 + field_get_byte(field, j)];
 
 			if (weight_sum > roll)
-				return distribution_pick_random_from_weighted_byte(distributions[i], field, j);
+				return distribution_pick_random_from_weighted_byte(distribution, field, j);
 		}
 	}
 
 	fprintf(stderr, "Failed to select tile in distribution_pick_random()");
 	exit(1);
-}
-
-int distribution_pick_random(Distribution* distribution, BitField field) {
-	return distributions_pick_random(1, (Distribution*[]){distribution}, field);
 }
 
 void distribution_add_tile(Distribution* distribution, int tile, Entropy weight) {
