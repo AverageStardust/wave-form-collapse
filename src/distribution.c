@@ -125,12 +125,6 @@ int distribution_pick_random(BitField field) {
 	exit(1);
 }
 
-void distribution_select_single(Distribution* distribution) {
-	set.distributions[0] = distribution;
-	set.length = 1;
-	set.max_tile_field_size = distribution->tile_field_size;
-}
-
 void distribution_select_area(DistributionArea* area, int x, int y) {
 	int start_u = (x * 4 / area->distribution_size + 1) / 4;
 	int end_u = (x * 4 / area->distribution_size + 7) / 4;
@@ -145,25 +139,10 @@ void distribution_select_area(DistributionArea* area, int x, int y) {
 			Distribution* distribution = area->distributions[u + v * area->distributions_width];
 			set.distributions[set.length] = distribution;
 			set.length++;
-			set.max_tile_field_size = max(set.max_tile_field_size, distribution->tile_field_size);
+			if (distribution->tile_field_size > set.max_tile_field_size)
+				set.max_tile_field_size = distribution->tile_field_size;
 		}
 	}
-}
-
-DistributionArea distribution_area_create(int size, int distribution_size, int distributions_width) {
-	DistributionArea* area = malloc(sizeof(DistributionArea));
-
-	if (area == NULL) {
-		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
-		exit(1);
-	}
-
-	area->size = size;
-
-	area->distribution_size;
-
-	area->distributions = malloc(sizeof(Distribution*) * distributions_width);
-	area->distributions_width = distributions_width;
 }
 
 void distribution_add_tile(Distribution* distribution, int tile, Entropy weight) {
@@ -187,6 +166,32 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 	}
 
 	field_set_bit(distribution->all_tiles, tile);
+}
+
+DistributionArea* distribution_area_create(int distribution_size, int distributions_width) {
+	DistributionArea* area = malloc(sizeof(DistributionArea));
+
+	if (area == NULL) {
+		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
+		exit(1);
+	}
+
+	area->distributions = malloc(sizeof(Distribution*) * distributions_width * distributions_width);
+	if (area->distributions == NULL) {
+		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
+		exit(1);
+	}
+
+	area->distribution_size = distribution_size;
+	area->distributions_width = distributions_width;
+
+	return area;
+}
+
+DistributionArea* distribution_area_create_single(Distribution* distribution) {
+	DistributionArea* area = distribution_area_create(INT32_MAX, 1);
+	area->distributions[0] = distribution;
+	return area;
 }
 
 Distribution* distribution_create(int tile_field_size) {
