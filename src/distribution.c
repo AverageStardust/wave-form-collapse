@@ -1,5 +1,12 @@
 #include "distribution.h"
 
+// set of selected distributions
+struct {
+	Distribution* distributions[4];
+	int length;
+	int max_tile_field_size;
+} set;
+
 void distribution_free(Distribution* distribution) {
 	free(distribution->weights);
 	free(distribution->weight_table);
@@ -7,36 +14,11 @@ void distribution_free(Distribution* distribution) {
 	free(distribution);
 }
 
-void distributions_set_all_tiles(DistributionSet distSet, BitField field) {
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
-		field_or(field, distribution->all_tiles, distribution->tile_field_size);
-	}
-}
-
-Entropy distributions_get_shannon_entropy(DistributionSet distSet, BitField field) {
-	Entropy weight_sum = 0, weight_log_weight = 0;
-
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
-
-		for (int j = 0; j < distribution->tile_field_size; j++) {
-			int index = j * 256 + field_get_byte(field, j);
-			weight_sum += distribution->weight_table[index];
-			weight_log_weight += distribution->weight_log_weight_table[index];
-		}
-	}
-
-	if (weight_sum == 0) return 0;
-
-	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
-}
-
-int distribution_pick_random_unweighted(DistributionSet distSet, BitField field) {
+int distribution_pick_random_unweighted(BitField field) {
 	int tile_count = 0;
 
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
@@ -50,8 +32,8 @@ int distribution_pick_random_unweighted(DistributionSet distSet, BitField field)
 	int roll = rand() % tile_count;
 	tile_count = 0;
 
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
@@ -86,11 +68,36 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 	exit(1);
 }
 
-int distributions_pick_random(DistributionSet distSet, BitField field) {
+void distribution_get_all_tiles(BitField field) {
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
+		field_or(field, distribution->all_tiles, distribution->tile_field_size);
+	}
+}
+
+Entropy distribution_get_shannon_entropy(BitField field) {
+	Entropy weight_sum = 0, weight_log_weight = 0;
+
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
+
+		for (int j = 0; j < distribution->tile_field_size; j++) {
+			int index = j * 256 + field_get_byte(field, j);
+			weight_sum += distribution->weight_table[index];
+			weight_log_weight += distribution->weight_log_weight_table[index];
+		}
+	}
+
+	if (weight_sum == 0) return 0;
+
+	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
+}
+
+int distribution_pick_random(BitField field) {
 	Entropy weight_sum = 0;
 
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
 
 		for (int j = 0; j < distribution->tile_field_size; j++) {
 			weight_sum += distribution->weight_table[j * 256 + field_get_byte(field, j)];
@@ -98,13 +105,13 @@ int distributions_pick_random(DistributionSet distSet, BitField field) {
 	}
 
 	if (weight_sum == 0)
-		return distribution_pick_random_unweighted(distSet, field);
+		return distribution_pick_random_unweighted(field);
 
 	Entropy roll = rand() % weight_sum;
 	weight_sum = 0;
 
-	for (int i = 0; i < distSet.length; i++) {
-		Distribution* distribution = distSet.distributions[i];
+	for (int i = 0; i < set.length; i++) {
+		Distribution* distribution = set.distributions[i];
 
 		for (int j = 0; j < distribution->tile_field_size; j++) {
 			weight_sum += distribution->weight_table[j * 256 + field_get_byte(field, j)];
@@ -116,6 +123,47 @@ int distributions_pick_random(DistributionSet distSet, BitField field) {
 
 	fprintf(stderr, "Failed to select tile in distribution_pick_random()");
 	exit(1);
+}
+
+void distribution_select_single(Distribution* distribution) {
+	set.distributions[0] = distribution;
+	set.length = 1;
+	set.max_tile_field_size = distribution->tile_field_size;
+}
+
+void distribution_select_area(DistributionArea* area, int x, int y) {
+	int start_u = (x * 4 / area->distribution_size + 1) / 4;
+	int end_u = (x * 4 / area->distribution_size + 7) / 4;
+	int start_v = (y * 4 / area->distribution_size + 1) / 4;
+	int end_v = (y * 4 / area->distribution_size + 7) / 4;
+
+	set.length = 0;
+	set.max_tile_field_size = 0;
+
+	for (int u = start_u; u < end_u; u++) {
+		for (int v = start_v; v < end_v; v++) {
+			Distribution* distribution = area->distributions[u + v * area->distributions_width];
+			set.distributions[set.length] = distribution;
+			set.length++;
+			set.max_tile_field_size = max(set.max_tile_field_size, distribution->tile_field_size);
+		}
+	}
+}
+
+DistributionArea distribution_area_create(int size, int distribution_size, int distributions_width) {
+	DistributionArea* area = malloc(sizeof(DistributionArea));
+
+	if (area == NULL) {
+		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
+		exit(1);
+	}
+
+	area->size = size;
+
+	area->distribution_size;
+
+	area->distributions = malloc(sizeof(Distribution*) * distributions_width);
+	area->distributions_width = distributions_width;
 }
 
 void distribution_add_tile(Distribution* distribution, int tile, Entropy weight) {

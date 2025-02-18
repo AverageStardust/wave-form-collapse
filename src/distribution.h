@@ -21,15 +21,18 @@ typedef struct {
 
 typedef struct {
 	Distribution** distributions;
-	int length;
-	int max_tile_field_size;
-} DistributionSet;
+	int size;
+	int distribution_size;
+	int distributions_width;
+} DistributionArea;
 
 Distribution* distribution_create(int tile_field_size);
 void distribution_add_tile(Distribution* distribution, int tile, Entropy weight);
-int distributions_pick_random(DistributionSet distSet, BitField field);
-Entropy distributions_get_shannon_entropy(DistributionSet distSet, BitField field);
-void distributions_set_all_tiles(DistributionSet distSet, BitField field);
+void distribution_select_single(Distribution* distribution);
+void distribution_select_area(DistributionArea* area, int x, int y);
+int distribution_pick_random(BitField field);
+Entropy distribution_get_shannon_entropy(BitField field);
+void distribution_set_all_tiles(BitField field);
 void distribution_free(Distribution* distribution);
 
 #endif
