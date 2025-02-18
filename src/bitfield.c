@@ -1,11 +1,12 @@
 #include "bitfield.h"
 
 #define FRAME_SIZE sizeof(BitFieldFrame)
-#define fieldStorageFrameSize(a) ((a + FRAME_SIZE - 1) / FRAME_SIZE)
-#define fieldStorageByteSize(a) (fieldStorageFrameSize(a) * FRAME_SIZE)
+#define field_storage_type_size(a, b) ((a + sizeof(b) - 1) / sizeof(b))
+#define field_storage_frame_size(a) ((a + FRAME_SIZE - 1) / FRAME_SIZE)
+#define field_storage_byte_size(a) (field_storage_frame_size(a) * FRAME_SIZE)
 
 BitField field_create(int size) {
-	BitField field = calloc(1, fieldStorageSize(size));
+	BitField field = calloc(1, field_storage_byte_size(size));
 
 	if (field == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create()");
@@ -16,7 +17,7 @@ BitField field_create(int size) {
 }
 
 BitField field_create_array(int count, int elm_size) {
-	BitField fields = calloc(count, fieldStorageSize(elm_size));
+	BitField fields = calloc(count, field_storage_byte_size(elm_size));
 
 	if (fields == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create_array()");
@@ -27,7 +28,7 @@ BitField field_create_array(int count, int elm_size) {
 }
 
 BitField field_index_array(BitField array, int elm_size, int index) {
-	return &array[fieldStorageFrameSize(elm_size) * index];
+	return &array[field_storage_frame_size(elm_size) * index];
 }
 
 void field_copy(BitField field_dest, BitField field_src, int size) {
@@ -41,7 +42,7 @@ void field_clear(BitField field, int size) {
 void field_or(BitField field_dest, BitField field_src, int size) {
 	v128_t a, b;
 
-	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
+	for (int i = 0; i < field_storage_frame_size(size); i++) {
 		a = wasm_v128_load(field_dest + i);
 		b = wasm_v128_load(field_src + i);
 		a = wasm_v128_or(a, b);
@@ -52,7 +53,7 @@ void field_or(BitField field_dest, BitField field_src, int size) {
 void field_and(BitField field_dest, BitField field_src, int size) {
 	v128_t a, b;
 
-	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
+	for (int i = 0; i < field_storage_frame_size(size); i++) {
 		a = wasm_v128_load(field_dest + i);
 		b = wasm_v128_load(field_src + i);
 		a = wasm_v128_and(a, b);
@@ -64,7 +65,7 @@ int field_popcnt(BitField field, int size) {
 	v128_t a, b;
 	int sum = 0;
 
-	for (int i = 0; i < divCeil(size, FRAME_SIZE); i++) {
+	for (int i = 0; i < field_storage_frame_size(size); i++) {
 		a = wasm_v128_load(field + i);
 		a = wasm_i8x16_popcnt(a);
 
@@ -101,7 +102,7 @@ int field_get_rightmost_bit(BitField field, int size, int starting_index) {
 	uint32_t *words = (uint32_t *)field;
 	uint32_t mask = 0xFFFFFFFF << starting_index;
 
-	for (int i = starting_index / sizeof(uint32_t); i < divCeil(size, sizeof(uint32_t)); i++) {
+	for (int i = starting_index / sizeof(uint32_t); i < field_storage_type_size(size, uint32_t); i++) {
 		if (words[i] == 0) continue;
 		int zeros = __builtin_ctz(words[i] & mask);
 
@@ -117,7 +118,7 @@ int field_get_rightmost_bit(BitField field, int size, int starting_index) {
 void field_print(BitField field, int size) {
 	uint32_t *words = (uint32_t *)field;
 
-	for (int i = 0; i < divCeil(size, sizeof(uint32_t)); i++) {
+	for (int i = 0; i < field_storage_type_size(size, uint32_t); i++) {
 		printf("%.8x ", words[i]);
 	}
 	printf("\n");
