@@ -168,6 +168,14 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 	field_set_bit(distribution->all_tiles, tile);
 }
 
+void distribution_area_set_point(DistributionArea* area, Distribution* distribution, int x, int y) {
+	area->distributions[x + y * area->distributions_width] = distribution;
+
+	if (distribution->tile_field_size > area->max_tile_field_size) {
+		area->max_tile_field_size = distribution->tile_field_size;
+	}
+}
+
 DistributionArea* distribution_area_create(int distribution_size, int distributions_width) {
 	DistributionArea* area = malloc(sizeof(DistributionArea));
 
@@ -184,6 +192,7 @@ DistributionArea* distribution_area_create(int distribution_size, int distributi
 
 	area->distribution_size = distribution_size;
 	area->distributions_width = distributions_width;
+	area->max_tile_field_size = 0;
 
 	return area;
 }
@@ -191,6 +200,7 @@ DistributionArea* distribution_area_create(int distribution_size, int distributi
 DistributionArea* distribution_area_create_single(Distribution* distribution) {
 	DistributionArea* area = distribution_area_create(INT32_MAX, 1);
 	area->distributions[0] = distribution;
+	area->max_tile_field_size = distribution->tile_field_size;
 	return area;
 }
 

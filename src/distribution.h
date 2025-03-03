@@ -23,6 +23,7 @@ typedef struct {
 	Distribution** distributions;
 	int distribution_size;
 	int distributions_width;
+	int max_tile_field_size;
 } DistributionArea;
 
 Distribution* distribution_create(int tile_field_size);

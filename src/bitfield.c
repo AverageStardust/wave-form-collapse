@@ -16,15 +16,37 @@ BitField field_create(int size) {
 	return field;
 }
 
-BitField field_create_array(int count, int elm_size) {
-	BitField fields = calloc(count, field_storage_byte_size(elm_size));
+BitField field_create_junk_array(int count, int elm_size) {
+	BitField array = malloc(count * field_storage_byte_size(elm_size));
 
-	if (fields == NULL) {
+	if (array == NULL) {
 		fprintf(stderr, "Failed to allocate memory: field_create_array()");
 		exit(1);
 	}
 
-	return fields;
+	return array;
+}
+
+BitField field_create_empty_array(int count, int elm_size) {
+	BitField array = calloc(count, field_storage_byte_size(elm_size));
+
+	if (array == NULL) {
+		fprintf(stderr, "Failed to allocate memory: field_create_array()");
+		exit(1);
+	}
+
+	return array;
+}
+
+BitField field_realloc_array(BitField array, int count, int elm_size) {
+	array = realloc(array, count * field_storage_byte_size(elm_size));
+
+	if (array == NULL) {
+		fprintf(stderr, "Failed to allocate memory: field_realloc_array()");
+		exit(1);
+	}
+
+	return array;
 }
 
 BitField field_index_array(BitField array, int elm_size, int index) {
