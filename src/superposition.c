@@ -64,45 +64,16 @@ BitField superposition_get_naive_tile_superposition(Superposition* superposition
 	return tile;
 }
 
-<<<<<<< HEAD
-void superposition_from_area(Superposition* superposition, int x, int y, int width, int height) {
-	if (superposition->tiles != NULL) {
-		for (int i = 0; i < superposition->width * superposition->height; i++) {
-			free(superposition->tiles[i]);
-		}
-	}
-
-=======
 void superposition_set_area(Superposition* superposition, DistributionArea* area, int x, int y, int width, int height) {
->>>>>>> 6340f91 (checkpoint)
 	superposition->x = x;
 	superposition->y = y;
 	superposition->width = width;
 	superposition->height = height;
-<<<<<<< HEAD
-
-	int tile_field_size = superposition->generator->max_tile_field_size;
-
-	superposition->tiles = field_create_array(width * height, tile_field_size);
-	superposition->tile_distributions = realloc(superposition->tiles, sizeof(DistributionSet) * width * height);
-
-	if (superposition->tiles == NULL || superposition->tile_distributions == NULL) {
-		fprintf(stderr, "Failed to allocate memory: superposition_of_area()");
-		exit(1);
-	}
-
-	for (int u = 0; u < width; u++) {
-		for (int v = 0; v < height; v++) {
-			superposition->tile_distributions[u + v * width] = generator_get_distributions_at(superposition->generator, x + u, y + v);
-		}
-	}
-=======
 	superposition->area = area;
 
 	int tile_field_size = area->max_tile_field_size;
 
 	// TODO: init tiles
->>>>>>> 6340f91 (checkpoint)
 
 	for (int u = 0; u < width; u++) {
 		for (int v = 0; v < height; v++) {
@@ -130,11 +101,7 @@ void superposition_set_area(Superposition* superposition, DistributionArea* area
 	entropies_initalize_from_tiles(superposition->entropies, width, height);
 }
 
-<<<<<<< HEAD
-Superposition* superposition_create(Generator* generator, int maxWidth, int maxHeight) {
-=======
 Superposition* superposition_create(int maxWidth, int maxHeight) {
->>>>>>> 6340f91 (checkpoint)
 	Superposition* superposition = malloc(sizeof(Superposition));
 
 	if (superposition == NULL) {
