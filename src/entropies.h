@@ -20,8 +20,6 @@ typedef struct {
 	GenerationHeapNode heap_size;
 } Entropies;
 
-#include "entropies.h"
-
 // ported from JS
 // holds entropy data for Superposition
 // allow quick to:

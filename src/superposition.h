@@ -19,11 +19,12 @@ typedef struct {
 	Tileset* tileset;
 	World* world;
 
+	BitField temp_tile_field;
+	BitField temp_edge_field;
 	BitField fields;
-
 	Entropies* entropies;
-	GenerationTile stale_entropy_tiles[STALE_TILE_LIMIT];
-	int stale_tile_count;
+	Hashmap* stale_entropy_tiles;
+	int record_entropy_changes;
 
 	int x;
 	int y;
@@ -32,6 +33,9 @@ typedef struct {
 
 } Superposition;
 
+int superposition_is_fully_collapsed(Superposition* superposition);
+void superposition_collapse_least(Superposition* superposition);
+void superposition_set_area(Superposition* superposition, DistributionArea* area, Tileset* tileset, World* world, int x, int y, int width, int height);
 Superposition* superposition_create(int maxWidth, int maxHeight);
 
 #endif
