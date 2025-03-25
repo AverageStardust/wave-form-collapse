@@ -7,6 +7,8 @@
 #include <string.h>
 #include <wasm_simd128.h>
 
+#define bit_field_storage_frame_size(a) ((a + sizeof(BitFieldFrame) - 1) / sizeof(BitFieldFrame))
+
 typedef v128_t BitFieldFrame;
 typedef BitFieldFrame* BitField;
 
