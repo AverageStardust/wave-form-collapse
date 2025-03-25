@@ -19,21 +19,22 @@ typedef struct {
 	int tile_field_size;
 } Distribution;
 
+Distribution* distribution_create(int tile_field_size);
+void distribution_add_tile(Distribution* distribution, int tile, Entropy weight);
+void distribution_free(Distribution* distribution);
+
 typedef struct {
 	Distribution** distributions;
-	int distribution_size;
-	int distributions_width;
-	int max_tile_field_size;
+	int distribution_size;	  // size of an individual distribution in tiles
+	int distributions_width;  // number of distributions wide
 } DistributionArea;
 
-Distribution* distribution_create(int tile_field_size);
-DistributionArea* distribution_area_create_single(Distribution* distribution);
-DistributionArea* distribution_area_create(int distribution_size, int distributions_width);
-void distribution_add_tile(Distribution* distribution, int tile, Entropy weight);
-void distribution_select_area(DistributionArea* area, int x, int y);
-int distribution_pick_random(BitField field);
-Entropy distribution_get_shannon_entropy(BitField field);
-void distribution_set_all_tiles(BitField field);
-void distribution_free(Distribution* distribution);
+DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width);
+void distribution_area_set_point(DistributionArea* area, Distribution* distribution, int x, int y);
+void distribution_area_select(DistributionArea* area, int x, int y);
+int distribution_area_pick_random(BitField field);
+Entropy distribution_area_get_shannon_entropy(BitField field);
+void distribution_area_get_all_tiles(BitField field, int field_size);
+void distribution_area_free(DistributionArea* area);
 
 #endif

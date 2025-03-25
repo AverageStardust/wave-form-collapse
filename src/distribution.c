@@ -4,7 +4,6 @@
 struct {
 	Distribution* distributions[4];
 	int length;
-	int max_tile_field_size;
 } set;
 
 void distribution_free(Distribution* distribution) {
@@ -12,6 +11,13 @@ void distribution_free(Distribution* distribution) {
 	free(distribution->weight_table);
 	free(distribution->weight_log_weight_table);
 	free(distribution);
+}
+
+void distribution_area_free(DistributionArea* area) {
+	for (int i = 0; i < area->distributions_width * area->distributions_width; i++) {
+		distribution_free(area->distributions[i]);
+	}
+	free(area);
 }
 
 int distribution_pick_random_unweighted(BitField field) {
@@ -68,14 +74,15 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 	exit(1);
 }
 
-void distribution_get_all_tiles(BitField field) {
+void distribution_area_get_all_tiles(BitField field, int field_size) {
+	feild_clear(field, field_size);
 	for (int i = 0; i < set.length; i++) {
 		Distribution* distribution = set.distributions[i];
-		field_or(field, distribution->all_tiles, distribution->tile_field_size);
+		field_or(field, distribution->all_tiles, min(field_size, distribution->tile_field_size));
 	}
 }
 
-Entropy distribution_get_shannon_entropy(BitField field) {
+Entropy distribution_area_get_shannon_entropy(BitField field) {
 	Entropy weight_sum = 0, weight_log_weight = 0;
 
 	for (int i = 0; i < set.length; i++) {
@@ -93,7 +100,7 @@ Entropy distribution_get_shannon_entropy(BitField field) {
 	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
 }
 
-int distribution_pick_random(BitField field) {
+int distribution_area_pick_random(BitField field) {
 	Entropy weight_sum = 0;
 
 	for (int i = 0; i < set.length; i++) {
@@ -125,22 +132,19 @@ int distribution_pick_random(BitField field) {
 	exit(1);
 }
 
-void distribution_select_area(DistributionArea* area, int x, int y) {
+void distribution_area_select(DistributionArea* area, int x, int y) {
 	int start_u = (x * 4 / area->distribution_size + 1) / 4;
 	int end_u = (x * 4 / area->distribution_size + 7) / 4;
 	int start_v = (y * 4 / area->distribution_size + 1) / 4;
 	int end_v = (y * 4 / area->distribution_size + 7) / 4;
 
 	set.length = 0;
-	set.max_tile_field_size = 0;
 
 	for (int u = start_u; u < end_u; u++) {
 		for (int v = start_v; v < end_v; v++) {
 			Distribution* distribution = area->distributions[u + v * area->distributions_width];
 			set.distributions[set.length] = distribution;
 			set.length++;
-			if (distribution->tile_field_size > set.max_tile_field_size)
-				set.max_tile_field_size = distribution->tile_field_size;
 		}
 	}
 }
@@ -168,39 +172,17 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 	field_set_bit(distribution->all_tiles, tile);
 }
 
-void distribution_area_set_point(DistributionArea* area, Distribution* distribution, int x, int y) {
-	area->distributions[x + y * area->distributions_width] = distribution;
-
-	if (distribution->tile_field_size > area->max_tile_field_size) {
-		area->max_tile_field_size = distribution->tile_field_size;
-	}
-}
-
-DistributionArea* distribution_area_create(int distribution_size, int distributions_width) {
+DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width) {
 	DistributionArea* area = malloc(sizeof(DistributionArea));
-
 	if (area == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
 		exit(1);
 	}
 
-	area->distributions = malloc(sizeof(Distribution*) * distributions_width * distributions_width);
-	if (area->distributions == NULL) {
-		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
-		exit(1);
-	}
-
+	area->distributions = distributions;
 	area->distribution_size = distribution_size;
 	area->distributions_width = distributions_width;
-	area->max_tile_field_size = 0;
 
-	return area;
-}
-
-DistributionArea* distribution_area_create_single(Distribution* distribution) {
-	DistributionArea* area = distribution_area_create(INT32_MAX, 1);
-	area->distributions[0] = distribution;
-	area->max_tile_field_size = distribution->tile_field_size;
 	return area;
 }
 
