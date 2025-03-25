@@ -113,6 +113,19 @@ void hashmap_free(Hashmap* hashmap, void (*free_value)(void* value)) {
 	free(hashmap);
 }
 
+void hashmap_clear(Hashmap* hashmap, int new_size) {
+	hashmap->size = new_size;
+	hashmap->collisions = 0;
+
+	free(hashmap->nodes);
+	hashmap->nodes = calloc(new_size, sizeof(HashmapNode*));
+
+	if (hashmap->nodes == NULL) {
+		fprintf(stderr, "Failed to allocate memory: hashmap_clear()");
+		exit(1);
+	}
+}
+
 void hashmap_map(Hashmap* hashmap, void* (*map_func)(uint64_t key, void* value)) {
 	for (int i = 0; i < hashmap->size; i++) {
 		HashmapNode* node = hashmap->nodes[i];
@@ -149,6 +162,23 @@ void* hashmap_get(Hashmap* hashmap, uint64_t key) {
 	}
 
 	return NULL;
+}
+
+int hashmap_has(Hashmap* hashmap, uint64_t key) {
+	uint32_t hash = jenkins_hash(sizeof(uint64_t), (uint8_t*)&key);
+	int index = hash % hashmap->size;
+
+	HashmapNode* node = hashmap->nodes[index];
+
+	while (node != NULL) {
+		if (node->key == key) {
+			return 1;
+		} else {
+			node = node->next;
+		}
+	}
+
+	return 0;
 }
 
 void* hashmap_set(Hashmap* hashmap, uint64_t key, void* value) {

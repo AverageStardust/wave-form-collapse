@@ -18,13 +18,10 @@ int world_set(World* world, int x, int y, int tile) {
 }
 
 Chunk* world_get_chunk(World* world, int x, int y) {
-	uint64_t key = (uint64_t)(unsigned int)x + ((uint64_t)(unsigned int)y << 32);
-	return hashmap_get(world->chunks, key);
+	return hashmap_get(world->chunks, hashkey_from_pair(x, y));
 }
 
 Chunk* world_create_chunk(World* world, int x, int y) {
-	uint64_t key = (uint64_t)(unsigned int)x + ((uint64_t)(unsigned int)y << 32);
-
 	Chunk* chunk = malloc(sizeof(Chunk));
 
 	if (chunk == NULL) {
@@ -45,7 +42,7 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 
 	chunk->is_displayed = 0;
 
-	hashmap_set(world->chunks, key, chunk);
+	hashmap_set(world->chunks, hashkey_from_pair(x, y), chunk);
 
 	return chunk;
 }
