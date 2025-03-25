@@ -8,19 +8,19 @@
 #include "bitfield.h"
 #include "distribution.h"
 #include "entropies.h"
-<<<<<<< HEAD
-#include "generator.h"
-	=======
->>>>>>> 6340f91 (checkpoint)
 #include "hashmap.h"
 #include "tileset.h"
 #include "world.h"
 
 #define STALE_TILE_LIMIT 256
 
-	typedef struct {
+typedef struct {
 	DistributionArea* area;
-	BitField tiles;
+	Tileset* tileset;
+	World* world;
+
+	BitField fields;
+
 	Entropies* entropies;
 	GenerationTile stale_entropy_tiles[STALE_TILE_LIMIT];
 	int stale_tile_count;
