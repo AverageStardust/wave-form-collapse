@@ -9,14 +9,12 @@
 #include "distribution.h"
 #include "entropies.h"
 #include "hashmap.h"
-#include "tileset.h"
 #include "world.h"
 
 #define STALE_TILE_LIMIT 256
 
 typedef struct {
 	DistributionArea* area;
-	Tileset* tileset;
 	World* world;
 
 	BitField temp_tile_field;
@@ -35,7 +33,7 @@ typedef struct {
 
 int superposition_is_fully_collapsed(Superposition* superposition);
 void superposition_collapse_least(Superposition* superposition);
-void superposition_set_area(Superposition* superposition, DistributionArea* area, Tileset* tileset, World* world, int x, int y, int width, int height);
-Superposition* superposition_create(int maxWidth, int maxHeight);
+void superposition_set_area(Superposition* superposition, DistributionArea* area, int x, int y, int width, int height);
+Superposition* superposition_create(World* world);
 
 #endif

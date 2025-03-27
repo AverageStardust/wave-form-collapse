@@ -75,17 +75,10 @@ List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int 
 	return list;
 }
 
-World* world_create(uint32_t chunk_size) {
+World* world_create(int chunk_size, Tileset* tileset) {
 	World* world = malloc(sizeof(World));
 
 	if (world == NULL) {
-		fprintf(stderr, "Failed to allocate memory: world_create()\n");
-		exit(1);
-	}
-
-	world->chunks = hashmap_create(256);
-
-	if (world->chunks == NULL) {
 		fprintf(stderr, "Failed to allocate memory: world_create()\n");
 		exit(1);
 	}
@@ -95,9 +88,12 @@ World* world_create(uint32_t chunk_size) {
 		exit(1);
 	}
 
-	world->chunk_bits = 31 - __builtin_clz(chunk_size);
+	world->chunk_bits = 31 - __builtin_clz((uint32_t)chunk_size);
 	world->chunk_size = chunk_size;
 	world->chunk_mask = chunk_size - 1;
+
+	world->chunks = hashmap_create(256);
+	world->tileset = tileset;
 
 	return world;
 }
