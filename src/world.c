@@ -1,5 +1,15 @@
 #include "world.h"
 
+void free_chunk(Chunk* chunk) {
+	free(chunk->tiles);
+	free(chunk);
+}
+
+void world_free(World* world) {
+	hashmap_free(world->chunks, free_chunk);
+	free(world);
+}
+
 int world_get(World* world, int x, int y) {
 	Chunk* chunk = world_get_chunk(world, x >> world->chunk_bits, y >> world->chunk_bits);
 	if (chunk == NULL) return NULL_TILE;
@@ -40,11 +50,28 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 		chunk->tiles[i] = NULL_TILE;
 	}
 
+	chunk->x = x;
+	chunk->y = y;
+
 	chunk->is_displayed = 0;
 
 	hashmap_set(world->chunks, hashkey_from_pair(x, y), chunk);
 
 	return chunk;
+}
+
+IntList* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
+	IntList* list = intlist_create(4);
+
+	for (int u = x; u < x + width; u++) {
+		for (int v = y; v < y + height; v++) {
+			Chunk* chunk = world_get_chunk(world, u, v);
+			if (chunk != NULL && !chunk->is_displayed)
+				intlist_push(list, chunk);
+		}
+	}
+
+	return list;
 }
 
 World* world_create(uint32_t chunk_size) {

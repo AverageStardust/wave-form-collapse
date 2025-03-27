@@ -1,17 +1,21 @@
 #ifndef WORLD_GUARD
 #define WORLD_GUARD
 
+#include <emscripten.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "bitfield.h"
 #include "hashmap.h"
+#include "list.h"
 
 #define NULL_TILE -1
 
 typedef struct {
-	int* tiles;
+	int x;
+	int y;
 	int is_displayed;
+	int* tiles;
 } Chunk;
 
 typedef struct {
@@ -21,10 +25,12 @@ typedef struct {
 	int chunk_mask;
 } World;
 
-World* world_create(uint32_t chunk_size);
-Chunk* world_create_chunk(World* world, int x, int y);
-Chunk* world_get_chunk(World* world, int x, int y);
-int world_set(World* world, int x, int y, int tile);
-int world_get(World* world, int x, int y);
+extern EMSCRIPTEN_KEEPALIVE World* world_create(uint32_t chunk_size);
+extern EMSCRIPTEN_KEEPALIVE IntList* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height);
+extern EMSCRIPTEN_KEEPALIVE Chunk* world_create_chunk(World* world, int x, int y);
+extern EMSCRIPTEN_KEEPALIVE Chunk* world_get_chunk(World* world, int x, int y);
+extern EMSCRIPTEN_KEEPALIVE int world_set(World* world, int x, int y, int tile);
+extern EMSCRIPTEN_KEEPALIVE int world_get(World* world, int x, int y);
+extern EMSCRIPTEN_KEEPALIVE void world_free(World* world);
 
 #endif
