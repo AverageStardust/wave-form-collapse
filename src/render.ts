@@ -1,6 +1,7 @@
 import * as twgl from "twgl.js";
 import { Camera } from "./camera";
-import { CHUNK_SIZE, getChunkTiles, getUndisplayedChunks } from "./cwrapper";
+import { } from "./cwrapper";
+import { World } from "./world";
 
 const WORLD_TEX_BITS = 8;
 const WORLD_TEX_SIZE = 1 << WORLD_TEX_BITS;
@@ -16,7 +17,8 @@ export class Renderer {
     worldTexture: WebGLTexture
     tilesetTexture: WebGLTexture
 
-    camera: Camera
+    camera: Camera;
+    world: World | null = null;
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -53,6 +55,10 @@ export class Renderer {
         const fragmentShader = await (await fetch("./world.frag")).text();
 
         this.programInfo = twgl.createProgramInfo(this.gl, [vertexShader, fragmentShader]);
+    }
+
+    setWorld(world: World) {
+        this.world = world;
     }
 
     start() {
@@ -92,34 +98,34 @@ export class Renderer {
     }
 
     updateWorldTexture() {
-        const gl = this.gl;
+        const gl = this.gl, world = this.world;
+
+        if (world == null) throw Error("Can't update world texture, no world assigned");
 
         gl.bindTexture(gl.TEXTURE_2D, this.worldTexture);
 
         const zoom = this.camera.size / Math.min(this.canvas.width, this.canvas.height);
         const tilesWidth = this.canvas.width * zoom;
         const tilesHeight = this.canvas.height * zoom;
-        const chuckLowX = Math.floor((this.camera.position.x - tilesWidth) / CHUNK_SIZE);
-        const chuckLowY = Math.floor((this.camera.position.y - tilesHeight) / CHUNK_SIZE);
-        const chuckHighX = Math.ceil((this.camera.position.x + tilesWidth) / CHUNK_SIZE);
-        const chuckHighY = Math.ceil((this.camera.position.y + tilesHeight) / CHUNK_SIZE);
+        const chuckLowX = Math.floor((this.camera.position.x - tilesWidth) / world.chunkSize);
+        const chuckLowY = Math.floor((this.camera.position.y - tilesHeight) / world.chunkSize);
+        const chuckHighX = Math.ceil((this.camera.position.x + tilesWidth) / world.chunkSize);
+        const chuckHighY = Math.ceil((this.camera.position.y + tilesHeight) / world.chunkSize);
         const chunkWidth = chuckHighX - chuckLowX + 1;
         const chunkHeight = chuckHighY - chuckLowY + 1;
 
-        const intList = getUndisplayedChunks(chuckLowX, chuckLowY, chunkWidth, chunkHeight);
+        const chunks = world.getUndisplayedChunks(chuckLowX, chuckLowY, chunkWidth, chunkHeight);
 
-        for (let i = 0; i < intList.length; i += 2) {
-            const x = intList.at(i), y = intList.at(i + 1);
-            const tiles = getChunkTiles(x, y, true)!;
-
-            // process tile data into texture data if we want
+        for (const chunk of chunks) {
+            const x = chunk.x * world.chunkSize;
+            const y = chunk.y * world.chunkSize;
+            const renderData = chunk.getRenderData();
 
             gl.texSubImage2D(
                 gl.TEXTURE_2D, 0,
-                (x * CHUNK_SIZE) & WORLD_TEX_MASK, (y * CHUNK_SIZE) & WORLD_TEX_MASK,
-                CHUNK_SIZE, CHUNK_SIZE,
-                gl.RED_INTEGER, gl.INT, tiles);
+                x & WORLD_TEX_MASK, y & WORLD_TEX_MASK,
+                world.chunkSize, world.chunkSize,
+                gl.RED_INTEGER, gl.INT, renderData);
         }
-        intList.free();
     }
 }
