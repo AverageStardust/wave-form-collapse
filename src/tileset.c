@@ -93,7 +93,7 @@ Tileset* tileset_create(int edge_field_size, int tile_field_size) {
 	Tileset* tileset = malloc(sizeof(Tileset));
 
 	if (tileset == NULL) {
-		fprintf(stderr, "Failed to allocate memory: tileset_create()");
+		fprintf(stderr, "Failed to allocate memory: tileset_create()\n");
 		exit(1);
 	}
 
@@ -101,7 +101,7 @@ Tileset* tileset_create(int edge_field_size, int tile_field_size) {
 	tileset->edge_table = calloc(tile_field_size * edge_table_byte_size, sizeof(BitFieldFrame));
 
 	if (tileset->tile_table == NULL || tileset->edge_table == NULL) {
-		fprintf(stderr, "Failed to allocate memory: tileset_create()");
+		fprintf(stderr, "Failed to allocate memory: tileset_create()\n");
 		exit(1);
 	}
 

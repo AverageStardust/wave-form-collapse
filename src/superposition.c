@@ -187,7 +187,7 @@ Superposition* superposition_create(int maxWidth, int maxHeight) {
 	Superposition* superposition = malloc(sizeof(Superposition));
 
 	if (superposition == NULL) {
-		fprintf(stderr, "Failed to allocate memory: superposition_create()");
+		fprintf(stderr, "Failed to allocate memory: superposition_create()\n");
 		exit(1);
 	}
 

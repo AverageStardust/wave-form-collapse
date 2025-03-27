@@ -11,7 +11,7 @@ void intlist_allocate_length(IntList* list, int min_length) {
 	list->elements = realloc(list->elements, list->allocated_length * 2 * sizeof(int));
 
 	if (list == NULL) {
-		fprintf(stderr, "Failed to allocate memory: intlist_allocate_length()");
+		fprintf(stderr, "Failed to allocate memory: list_allocate_length()\n");
 		exit(1);
 	}
 }

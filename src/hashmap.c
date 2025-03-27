@@ -21,7 +21,7 @@ HashmapNode* hashmap_create_node(uint64_t key, void* value) {
 	HashmapNode* node = malloc(sizeof(HashmapNode));
 
 	if (node == NULL) {
-		fprintf(stderr, "Failed to allocate memory: hashmap_create_node()");
+		fprintf(stderr, "Failed to allocate memory: hashmap_create_node()\n");
 		exit(1);
 	}
 
@@ -86,7 +86,7 @@ void hashmap_grow(Hashmap* hashmap, int new_size) {
 	hashmap->nodes = realloc(hashmap->nodes, new_size * sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
-		fprintf(stderr, "Failed to allocate memory: hashmap_grow()");
+		fprintf(stderr, "Failed to allocate memory: hashmap_grow()\n");
 		exit(1);
 	}
 
@@ -121,7 +121,7 @@ void hashmap_clear(Hashmap* hashmap, int new_size) {
 	hashmap->nodes = calloc(new_size, sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
-		fprintf(stderr, "Failed to allocate memory: hashmap_clear()");
+		fprintf(stderr, "Failed to allocate memory: hashmap_clear()\n");
 		exit(1);
 	}
 }
@@ -215,7 +215,7 @@ Hashmap* hashmap_create(int inital_size) {
 	Hashmap* hashmap = malloc(sizeof(Hashmap));
 
 	if (hashmap == NULL) {
-		fprintf(stderr, "Failed to allocate memory: hashmap_create()");
+		fprintf(stderr, "Failed to allocate memory: hashmap_create()\n");
 		exit(1);
 	}
 
@@ -224,7 +224,7 @@ Hashmap* hashmap_create(int inital_size) {
 	hashmap->nodes = calloc(inital_size, sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
-		fprintf(stderr, "Failed to allocate memory: hashmap_create()");
+		fprintf(stderr, "Failed to allocate memory: hashmap_create()\n");
 		exit(1);
 	}
 

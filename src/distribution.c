@@ -51,7 +51,7 @@ int distribution_pick_random_unweighted(BitField field) {
 		}
 	}
 
-	fprintf(stderr, "Failed to select tile in distribution_pick_random_unweighted()");
+	fprintf(stderr, "Failed to select tile in distribution_pick_random_unweighted()\n");
 	exit(1);
 }
 
@@ -70,7 +70,7 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 		i = tile + 1;
 	}
 
-	fprintf(stderr, "Failed to select tile in distribution_pick_random_from_weighted_byte()");
+	fprintf(stderr, "Failed to select tile in distribution_pick_random_from_weighted_byte()\n");
 	exit(1);
 }
 
@@ -128,7 +128,7 @@ int distribution_area_pick_random(BitField field) {
 		}
 	}
 
-	fprintf(stderr, "Failed to select tile in distribution_pick_random()");
+	fprintf(stderr, "Failed to select tile in distribution_pick_random()\n");
 	exit(1);
 }
 
@@ -175,7 +175,7 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width) {
 	DistributionArea* area = malloc(sizeof(DistributionArea));
 	if (area == NULL) {
-		fprintf(stderr, "Failed to allocate memory: distribution_area_create()");
+		fprintf(stderr, "Failed to allocate memory: distribution_area_create()\n");
 		exit(1);
 	}
 
@@ -190,7 +190,7 @@ Distribution* distribution_create(int tile_field_size) {
 	Distribution* distribution = malloc(sizeof(Distribution));
 
 	if (distribution == NULL) {
-		fprintf(stderr, "Failed to allocate memory: distribution_create()");
+		fprintf(stderr, "Failed to allocate memory: distribution_create()\n");
 		exit(1);
 	}
 
@@ -200,7 +200,7 @@ Distribution* distribution_create(int tile_field_size) {
 	distribution->all_tiles = calloc(1, tile_field_size);
 
 	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL || distribution->all_tiles == NULL) {
-		fprintf(stderr, "Failed to allocate memory: distribution_create()");
+		fprintf(stderr, "Failed to allocate memory: distribution_create()\n");
 		exit(1);
 	}
 

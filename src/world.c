@@ -1,8 +1,8 @@
 #include "world.h"
 
-void free_chunk(Chunk* chunk) {
-	free(chunk->tiles);
-	free(chunk);
+void free_chunk(void* chunk) {
+	free(((Chunk*)chunk)->tiles);
+	free((Chunk*)chunk);
 }
 
 void world_free(World* world) {
@@ -35,14 +35,14 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 	Chunk* chunk = malloc(sizeof(Chunk));
 
 	if (chunk == NULL) {
-		fprintf(stderr, "Failed to allocate memory: world_create_chunk()");
+		fprintf(stderr, "Failed to allocate memory: world_create_chunk()\n");
 		exit(1);
 	}
 
 	chunk->tiles = malloc(world->chunk_size * world->chunk_size * sizeof(int));
 
 	if (chunk->tiles == NULL) {
-		fprintf(stderr, "Failed to allocate memory: world_create_chunk()");
+		fprintf(stderr, "Failed to allocate memory: world_create_chunk()\n");
 		exit(1);
 	}
 
@@ -60,14 +60,14 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 	return chunk;
 }
 
-IntList* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
-	IntList* list = intlist_create(4);
+List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
+	List64* list = list64_create(4);
 
 	for (int u = x; u < x + width; u++) {
 		for (int v = y; v < y + height; v++) {
 			Chunk* chunk = world_get_chunk(world, u, v);
 			if (chunk != NULL && !chunk->is_displayed)
-				intlist_push(list, chunk);
+				list64_push(list, (uint64_t)chunk);
 		}
 	}
 
@@ -78,19 +78,19 @@ World* world_create(uint32_t chunk_size) {
 	World* world = malloc(sizeof(World));
 
 	if (world == NULL) {
-		fprintf(stderr, "Failed to allocate memory: world_create()");
+		fprintf(stderr, "Failed to allocate memory: world_create()\n");
 		exit(1);
 	}
 
 	world->chunks = hashmap_create(256);
 
 	if (world->chunks == NULL) {
-		fprintf(stderr, "Failed to allocate memory: world_create()");
+		fprintf(stderr, "Failed to allocate memory: world_create()\n");
 		exit(1);
 	}
 
-	if (chunk_size != 0 || (chunk_size & (chunk_size - 1))) {
-		fprintf(stderr, "Chunk size must be a power of two: world_create()");
+	if (chunk_size == 0 || (chunk_size & (chunk_size - 1))) {
+		fprintf(stderr, "Chunk size must be a power of two: world_create()\n");
 		exit(1);
 	}
 

@@ -160,7 +160,7 @@ Entropies* entropies_create(int maxWidth, int maxHeight) {
 	Entropies* entropies = malloc(sizeof(Entropies));
 
 	if (entropies == NULL) {
-		fprintf(stderr, "Failed to allocate memory: entropies_create()");
+		fprintf(stderr, "Failed to allocate memory: entropies_create()\n");
 		exit(1);
 	}
 
@@ -173,7 +173,7 @@ Entropies* entropies_create(int maxWidth, int maxHeight) {
 	entropies->values = malloc(sizeof(int) * maxWidth * maxHeight);
 
 	if (entropies->tiles == NULL || entropies->tile_nodes == NULL || entropies->keys == NULL || entropies->values == NULL) {
-		fprintf(stderr, "Failed to allocate memory: entropies_create()");
+		fprintf(stderr, "Failed to allocate memory: entropies_create()\n");
 		exit(1);
 	}
 
