@@ -20,10 +20,14 @@ void intlist_push(IntList* list, int value) {
 	intlist_allocate_length(list, list->length + 1);
 
 	list->elements[list->length] = value;
-	list->length ++;
+	list->length++;
 }
 
-IntList* intlist_create(int inital_length) {
+int intlist_at(IntList* list, int index) {
+	return list->elements[index];
+}
+
+IntList* intlist_create(int inital_allocated_length) {
 	IntList* list = malloc(sizeof(IntList));
 
 	if (list == NULL) {
@@ -31,7 +35,7 @@ IntList* intlist_create(int inital_length) {
 		exit(1);
 	}
 
-	list->elements = calloc(inital_length, sizeof(int));
+	list->elements = calloc(inital_allocated_length, sizeof(int));
 
 	if (list->elements == NULL) {
 		fprintf(stderr, "Failed to allocate memory: intlist_create()");
@@ -39,7 +43,7 @@ IntList* intlist_create(int inital_length) {
 	}
 
 	list->length = 0;
-	list->allocated_length = inital_length;
+	list->allocated_length = inital_allocated_length;
 
 	return list;
 }
