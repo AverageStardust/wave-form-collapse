@@ -1,6 +1,6 @@
 import * as twgl from "twgl.js";
 import { Camera } from "./camera";
-import { } from "./cwrapper";
+import { free } from "./cwrapper";
 import { World } from "./world";
 
 const WORLD_TEX_BITS = 8;
@@ -19,6 +19,8 @@ export class Renderer {
 
     camera: Camera;
     world: World | null = null;
+
+    frameReleventPointers: number[] = [];
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -95,6 +97,10 @@ export class Renderer {
         twgl.drawBufferInfo(gl, this.bufferInfo);
 
         requestAnimationFrame(this.frame.bind(this));
+        gl.flush(); // just in case
+
+        // release memory used for frame rendering
+        for (const ptr of this.frameReleventPointers) free(ptr);
     }
 
     updateWorldTexture() {
@@ -119,13 +125,15 @@ export class Renderer {
         for (const chunk of chunks) {
             const x = chunk.x * world.chunkSize;
             const y = chunk.y * world.chunkSize;
-            const renderData = chunk.getRenderData();
+            const { data, ptr } = chunk.getRenderData();
 
             gl.texSubImage2D(
                 gl.TEXTURE_2D, 0,
                 x & WORLD_TEX_MASK, y & WORLD_TEX_MASK,
                 world.chunkSize, world.chunkSize,
-                gl.RED_INTEGER, gl.INT, renderData);
+                gl.RED_INTEGER, gl.INT, data);
+
+            this.frameReleventPointers.push(ptr);
         }
     }
 }

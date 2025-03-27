@@ -3,6 +3,7 @@ import { List } from "./list";
 
 let world_create: (chunk_size: number) => number;
 let world_get_undisplayed_chunks: (ptr: number, x: number, y: number, width: number, height: number) => number;
+let world_get_chunk_render_data: (worldPtr: number, chunkPtr: number) => number;
 let world_create_chunk: (ptr: number, x: number, y: number) => number;
 let world_get_chunk: (ptr: number, x: number, y: number) => number;
 let world_set: (ptr: number, x: number, y: number, tile: number) => number;
@@ -16,6 +17,7 @@ const worldRegistry = new FinalizationRegistry((ptr: number) => {
 export function init() {
     world_create = cwrap("world_create", "number", ["number"]);
     world_get_undisplayed_chunks = cwrap("world_get_undisplayed_chunks", "number", ["number", "number", "number", "number", "number"]);
+    world_get_chunk_render_data = cwrap("world_get_chunk_render_data", "number", ["number", "number"]);
     world_create_chunk = cwrap("world_create_chunk", "number", ["number", "number", "number"]);
     world_get_chunk = cwrap("world_get_chunk", "number", ["number", "number", "number"]);
     world_set = cwrap("world_set", "number", ["number", "number", "number"]);
@@ -85,9 +87,10 @@ export class Chunk {
         return getValue(this.ptr + 8, "i32");
     }
 
-    getRenderData(): Int32Array {
-        const tilesPtr = getValue(this.ptr + 16, "i32*");
+    getRenderData(): { data: Int32Array, ptr: number } {
+        const ptr = world_get_chunk_render_data(this.world.ptr, this.ptr);
         const tileArea = this.world.chunkSize ** 2;
-        return heap32.subarray((tilesPtr >> 2), (tilesPtr >> 2) + tileArea);
+        const data = heap32.subarray((ptr >> 2), (ptr >> 2) + tileArea);
+        return { data, ptr };
     }
 }

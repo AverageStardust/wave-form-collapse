@@ -81,7 +81,8 @@ void tileset_add_tile_table_entry(Tileset* tileset, int tile, int right_edge, in
 	tileset_add_tile_table_direction_entry(tileset, 3, tile, bottom_edge);
 }
 
-void tileset_add_tile(Tileset* tileset, int tile, int right_edge, int top_edge, int left_edge, int bottom_edge) {
+void tileset_add_tile(Tileset* tileset, int tile, uint32_t render_data, int right_edge, int top_edge, int left_edge, int bottom_edge) {
+	tileset->render_data_table[tile] = render_data;
 	tileset_add_tile_table_entry(tileset, tile, right_edge, top_edge, left_edge, bottom_edge);
 	tileset_add_edge_table_entry(tileset, tile, right_edge, top_edge, left_edge, bottom_edge);
 }
@@ -99,8 +100,9 @@ Tileset* tileset_create(int edge_field_size, int tile_field_size) {
 
 	tileset->tile_table = calloc(4 * tile_table_direction_size, sizeof(BitFieldFrame));
 	tileset->edge_table = calloc(tile_field_size * edge_table_byte_size, sizeof(BitFieldFrame));
+	tileset->render_data_table = malloc(tile_field_size * 8 * sizeof(uint32_t));
 
-	if (tileset->tile_table == NULL || tileset->edge_table == NULL) {
+	if (tileset->tile_table == NULL || tileset->edge_table == NULL || tileset->render_data_table == NULL) {
 		fprintf(stderr, "Failed to allocate memory: tileset_create()\n");
 		exit(1);
 	}

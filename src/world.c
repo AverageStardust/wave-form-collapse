@@ -61,6 +61,18 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 	return chunk;
 }
 
+uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk) {
+	uint32_t* render_data = malloc(world->chunk_size * world->chunk_size * sizeof(uint32_t));
+	for (int i = 0; i < world->chunk_size * world->chunk_size; i++) {
+		if (chunk->tiles[i] == -1) {
+			render_data[i] = -1;
+		} else {
+			render_data[i] = world->tileset->render_data_table[chunk->tiles[i]];
+		}
+	}
+	return render_data;
+}
+
 List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
 	List64* list = list64_create(4);
 
