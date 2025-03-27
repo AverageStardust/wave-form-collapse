@@ -1,58 +1,91 @@
-let intlist_create: (inital_allocated_length: number) => number;
-let intlist_push: (ptr: number, value: number) => null;
-let intlist_free: (ptr: number) => null;
+let list32_create: (inital_allocated_length: number) => number;
+let list64_create: (inital_allocated_length: number) => number;
+let list32_push: (ptr: number, value: number) => null;
+let list64_push: (ptr: number, value: number) => null;
+let list_free: (ptr: number) => null;
 
 const listRegistry = new FinalizationRegistry((ptr: number) => {
-    intlist_free(ptr);
+    list_free(ptr);
 });
 
 export function init() {
-    intlist_create = cwrap("intlist_create", "number", ["number"]);
-    intlist_push = cwrap("intlist_push", null, ["number", "number"]);
-    intlist_free = cwrap("intlist_free", null, ["number"]);
+    list32_create = cwrap("list32_create", "number", ["number"]);
+    list64_create = cwrap("list64_create", "number", ["number"]);
+    list32_push = cwrap("list_push32", null, ["number", "number"]);
+    list64_push = cwrap("list_push64", null, ["number", "number"]);
+    list_free = cwrap("list_free", null, ["number"]);
 }
 
 
-export class IntList {
-    ptr: number;
+export class List {
+    readonly ptr: number;
+    readonly elementSize: 4 | 8;
 
-    static create(initalAllocatedLength = 4) {
-        const list = new IntList(intlist_create(initalAllocatedLength));
+    static create32(initalAllocatedLength: number) {
+        const ptr = list32_create(initalAllocatedLength);
+        const list = new List(ptr, 4)
         listRegistry.register(list, list.ptr);
     }
 
-    static adopt(ptr: number) {
-        const list = new IntList(ptr);
+    static create64(initalAllocatedLength: number) {
+        const ptr = list64_create(initalAllocatedLength);
+        const list = new List(ptr, 8)
+        listRegistry.register(list, list.ptr);
+    }
+
+
+    static adopt32(ptr: number) {
+        const list = new List(ptr, 4);
         listRegistry.register(list, list.ptr);
         return list;
     }
 
-    constructor(ptr: number) {
+    static adopt64(ptr: number) {
+        const list = new List(ptr, 8);
+        listRegistry.register(list, list.ptr);
+        return list;
+    }
+
+    constructor(ptr: number, elementSize: 4 | 8) {
         this.ptr = ptr;
+        this.elementSize = elementSize;
     }
 
     get length() {
-        return getValue(this.ptr + 0, "i32")
+        return getValue(this.ptr + 0, "i32");
     }
 
     get allocatedLength() {
-        return getValue(this.ptr + 4, "i32")
+        return getValue(this.ptr + 4, "i32");
     }
 
     at(index: number) {
         index = Math.trunc(index);
         if (index < 0) index = this.length - index;
-        if (index >= this.length) throw RangeError("Out of bounds IntList access");
+        if (index >= this.length) throw RangeError("Out of bounds list access");
 
-        const elementsPtr = getValue(this.ptr + 8, "i32*")
-        return getValue(elementsPtr + index * 4, "i32");
+        const elementsPtr = getValue(this.ptr + 8, "i32*");
+        if (this.elementSize == 4) {
+            return getValue(elementsPtr + index * 4, "i32");
+        } else {
+            let lower = getValue(elementsPtr + index * 8, "i32");
+            let upper = getValue(elementsPtr + index * 8 + 4, "i32");
+            if (upper < 0)
+                lower = ~lower + 1;
+
+            return upper * (2 ** 32) + lower;
+        }
     }
 
     push(value: number) {
-        intlist_push(this.ptr, value);
+        if (this.elementSize == 4) {
+            list32_push(this.ptr, value);
+        } else {
+            list64_push(this.ptr, value);
+        }
     }
 
     free() {
-        intlist_free(this.ptr);
+        list_free(this.ptr);
     }
 }

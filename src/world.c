@@ -54,6 +54,7 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 	chunk->y = y;
 
 	chunk->is_displayed = 0;
+	chunk->generation_stage = 0;
 
 	hashmap_set(world->chunks, hashkey_from_pair(x, y), chunk);
 

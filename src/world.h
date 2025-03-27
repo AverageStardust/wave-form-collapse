@@ -15,18 +15,19 @@ typedef struct {
 	int x;
 	int y;
 	int is_displayed;
+	int generation_stage;
 	int* tiles;
 } Chunk;
 
 typedef struct {
-	Hashmap* chunks;
 	int chunk_size;
 	int chunk_bits;
 	int chunk_mask;
+	Hashmap* chunks;
 } World;
 
 extern EMSCRIPTEN_KEEPALIVE World* world_create(uint32_t chunk_size);
-extern EMSCRIPTEN_KEEPALIVE IntList* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height);
+extern EMSCRIPTEN_KEEPALIVE List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height);
 extern EMSCRIPTEN_KEEPALIVE Chunk* world_create_chunk(World* world, int x, int y);
 extern EMSCRIPTEN_KEEPALIVE Chunk* world_get_chunk(World* world, int x, int y);
 extern EMSCRIPTEN_KEEPALIVE int world_set(World* world, int x, int y, int tile);

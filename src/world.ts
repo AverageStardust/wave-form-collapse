@@ -1,4 +1,5 @@
-import { IntList } from "./list";
+import { heap32 } from "./cwrapper";
+import { List } from "./list";
 
 let world_create: (chunk_size: number) => number;
 let world_get_undisplayed_chunks: (ptr: number, x: number, y: number, width: number, height: number) => number;
@@ -8,7 +9,7 @@ let world_set: (ptr: number, x: number, y: number, tile: number) => number;
 let world_get: (ptr: number, x: number, y: number) => number;
 let world_free: (ptr: number) => void;
 
-const listRegistry = new FinalizationRegistry((ptr: number) => {
+const worldRegistry = new FinalizationRegistry((ptr: number) => {
     world_free(ptr);
 });
 
@@ -23,23 +24,26 @@ export function init() {
 }
 
 export class World {
-    ptr: number;
+    readonly ptr: number;
+    readonly chunkSize: number
 
     static create(chunkSize: number) {
-        const list = new World(world_create(chunkSize));
-        listRegistry.register(list, list.ptr);
+        const world = new World(world_create(chunkSize));
+        worldRegistry.register(world, world.ptr);
+        return world;
     }
 
     constructor(ptr: number) {
         this.ptr = ptr;
+        this.chunkSize = getValue(this.ptr + 0, "i32");;
     }
 
     getUndisplayedChunks(x: number, y: number, width: number, height: number): Chunk[] {
-        const chunkPtrs = new IntList(world_get_undisplayed_chunks(this.ptr, x, y, width, height));
+        const chunkPtrs = new List(world_get_undisplayed_chunks(this.ptr, x, y, width, height), 8);
         const chunks = [];
 
         for (let i = 0; i < chunkPtrs.length; i++) {
-            chunks.push(new Chunk(chunkPtrs.at(i)));
+            chunks.push(new Chunk(chunkPtrs.at(i), this));
         }
 
         chunkPtrs.free();
@@ -47,11 +51,11 @@ export class World {
     }
 
     createChunk(x: number, y: number): Chunk {
-        return new Chunk(world_create_chunk(this.ptr, x, y));
+        return new Chunk(world_create_chunk(this.ptr, x, y), this);
     }
 
     getChunk(x: number, y: number): Chunk {
-        return new Chunk(world_get_chunk(this.ptr, x, y))
+        return new Chunk(world_get_chunk(this.ptr, x, y), this)
     }
 
     set(x: number, y: number, tile: number): boolean {
@@ -65,21 +69,25 @@ export class World {
 }
 
 export class Chunk {
-    ptr: number;
+    readonly ptr: number;
+    readonly world: World;
+    readonly x: number;
+    readonly y: number;
 
-    constructor(ptr: number) {
+    constructor(ptr: number, world: World) {
         this.ptr = ptr;
+        this.world = world;
+        this.x = getValue(this.ptr + 0, "i32");
+        this.y = getValue(this.ptr + 4, "i32");
     }
 
-    get x() {
-        return getValue(this.ptr + 0, "i32");
-    }
-
-    get y() {
-        return getValue(this.ptr + 4, "i32");
-    }
-
-    get is_displayed() {
+    get isDisplayed() {
         return getValue(this.ptr + 8, "i32");
+    }
+
+    getRenderData(): Int32Array {
+        const tilesPtr = getValue(this.ptr + 16, "i32*");
+        const tileArea = this.world.chunkSize ** 2;
+        return heap32.subarray((tilesPtr >> 2), (tilesPtr >> 2) + tileArea);
     }
 }
