@@ -3,5 +3,5 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "list.h"
+#include "superposition.h"
 #include "world.h"
