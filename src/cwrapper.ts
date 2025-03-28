@@ -1,3 +1,4 @@
+import { init as initDistribution } from "./distribution.ts";
 import { init as initList } from "./list.ts";
 import { init as initTileset } from "./tileset.ts";
 import { init as initWorld } from "./world.ts";
@@ -20,6 +21,7 @@ export async function init() {
     heapU8 = Module.HEAPU8;
     heap32 = Module.HEAP32;
     heapU32 = Module.HEAPU32;
+    initDistribution();
     initList();
     initTileset();
     initWorld();

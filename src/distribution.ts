@@ -29,8 +29,8 @@ export class Distribution {
     readonly ptr: number;
     readonly tileset: Tileset;
 
-    static create(tileLimit: number = 128, tileset: Tileset): Distribution {
-        const distribution = new Distribution(distribution_create((tileLimit + 7) >> 3), tileset);
+    static create(tileset: Tileset): Distribution {
+        const distribution = new Distribution(distribution_create((tileset.tileLimit + 7) >> 3), tileset);
         distributionRegistry.register(distribution, distribution.ptr);
         return distribution;
     }

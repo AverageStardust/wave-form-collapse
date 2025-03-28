@@ -73,10 +73,14 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 }
 
 void distribution_area_get_all_tiles(BitField field, int field_size) {
-	feild_clear(field, field_size);
+	field_clear(field, field_size);
 	for (int i = 0; i < set.length; i++) {
 		Distribution* distribution = set.distributions[i];
-		field_or(field, distribution->all_tiles, min(field_size, distribution->tile_field_size));
+		if (field_size < distribution->tile_field_size) {
+			field_or(field, distribution->all_tiles, field_size);
+		} else {
+			field_or(field, distribution->all_tiles, distribution->tile_field_size);
+		}
 	}
 }
 
