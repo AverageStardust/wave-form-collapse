@@ -1,3 +1,5 @@
+import { Distribution } from "./distribution";
+
 let tileset_create: (edge_field_size: number, tile_field_size: number) => number;
 let tileset_add_tile: (tileset: number, tile: number, render_data: number, right_edge: number, top_edge: number, left_edge: number, bottom_edge: number) => void;
 let tileset_free: (ptr: number) => null;
@@ -45,5 +47,26 @@ export class Tileset {
 
         this.tileCount++;
         return tileId;
+    }
+}
+
+export class DistributionTileset extends Tileset {
+    distributions: Distribution[] = [];
+
+    static create(edgeLimit: number = 128, tileLimit: number = 128): DistributionTileset {
+        const tileset = new DistributionTileset(tileset_create((edgeLimit + 7) >> 3, (tileLimit + 7) >> 3));
+        tilesetRegistry.register(tileset, tileset.ptr);
+        return tileset;
+    }
+
+    addDistribution(distribution: Distribution, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number): number {
+        const tileId = super.addTile(0, 0, rightEdge, topEdge, leftEdge, bottomEdge);
+        this.distributions[tileId] = distribution;
+
+        return tileId;
+    }
+
+    getDistribution(tileId: number) {
+        return this.distributions[tileId];
     }
 }

@@ -1,6 +1,7 @@
 #ifndef DISTRIBUTION_GUARD
 #define DISTRIBUTION_GUARD
 
+#include <emscripten.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,9 +20,9 @@ typedef struct {
 	int tile_field_size;
 } Distribution;
 
-Distribution* distribution_create(int tile_field_size);
-void distribution_add_tile(Distribution* distribution, int tile, Entropy weight);
-void distribution_free(Distribution* distribution);
+extern EMSCRIPTEN_KEEPALIVE Distribution* distribution_create(int tile_field_size);
+extern EMSCRIPTEN_KEEPALIVE void distribution_add_tile(Distribution* distribution, int tile, Entropy weight);
+extern EMSCRIPTEN_KEEPALIVE void distribution_free(Distribution* distribution);
 
 typedef struct {
 	Distribution** distributions;
@@ -29,12 +30,12 @@ typedef struct {
 	int distributions_width;  // number of distributions wide
 } DistributionArea;
 
-DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width);
+extern EMSCRIPTEN_KEEPALIVE DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width);
 void distribution_area_set_point(DistributionArea* area, Distribution* distribution, int x, int y);
 void distribution_area_select(DistributionArea* area, int x, int y);
 int distribution_area_pick_random(BitField field);
 Entropy distribution_area_get_shannon_entropy(BitField field);
 void distribution_area_get_all_tiles(BitField field, int field_size);
-void distribution_area_free(DistributionArea* area);
+extern EMSCRIPTEN_KEEPALIVE void distribution_area_free(DistributionArea* area);
 
 #endif

@@ -1,6 +1,7 @@
 import { heap32 } from "./cwrapper";
+import { DistributionArea } from "./distribution";
 import { List } from "./list";
-import { Tileset } from "./tileset";
+import { DistributionTileset, Tileset } from "./tileset";
 
 let world_create: (chunk_size: number, tileset_ptr: number) => number;
 let world_get_undisplayed_chunks: (ptr: number, x: number, y: number, width: number, height: number) => number;
@@ -31,7 +32,7 @@ export class World {
     readonly chunkSize: number
     readonly tileset: Tileset;
 
-    static create(chunkSize: number, tileset: Tileset) {
+    static create(chunkSize: number, tileset: Tileset, _?: number): World {
         const world = new World(world_create(chunkSize, tileset.ptr), tileset);
         worldRegistry.register(world, world.ptr);
         return world;
@@ -70,6 +71,43 @@ export class World {
 
     get(x: number, y: number): number {
         return world_get(this.ptr, x, y);
+    }
+}
+
+export class DistributionWorld extends World {
+    declare readonly tileset: DistributionTileset;
+    distributionSize: number;
+
+    static create(chunkSize: number, tileset: DistributionTileset, distributionSize: number): DistributionWorld {
+        const world = new DistributionWorld(world_create(chunkSize, tileset.ptr), tileset, distributionSize);
+        worldRegistry.register(world, world.ptr);
+        return world;
+    }
+
+    constructor(ptr: number, tileset: DistributionTileset, distributionSize: number) {
+        super(ptr, tileset);
+        this.distributionSize = distributionSize;
+    }
+
+    getArea(x: number, y: number, width: number): DistributionArea {
+        const distributions = [];
+
+        const transformedX = x / this.distributionSize;
+        const transformedY = y / this.distributionSize;
+        const transformedWidth = width / this.distributionSize;
+
+        if (Math.trunc(transformedX) != transformedX || Math.trunc(transformedY) != transformedY || Math.trunc(transformedWidth) != transformedWidth) {
+            throw Error("Could not get misaligned distribution world area");
+        }
+
+        for (let v = transformedY; v < transformedY + transformedWidth; v++) {
+            for (let u = transformedX; u < transformedX + transformedWidth; u++) {
+                const tileId = this.get(u, v);
+                distributions.push(this.tileset.getDistribution(tileId));
+            }
+        }
+
+        return DistributionArea.create(distributions, this.distributionSize, transformedWidth);
     }
 }
 

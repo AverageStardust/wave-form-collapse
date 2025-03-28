@@ -14,9 +14,7 @@ void distribution_free(Distribution* distribution) {
 }
 
 void distribution_area_free(DistributionArea* area) {
-	for (int i = 0; i < area->distributions_width * area->distributions_width; i++) {
-		distribution_free(area->distributions[i]);
-	}
+	free(area->distributions);
 	free(area);
 }
 

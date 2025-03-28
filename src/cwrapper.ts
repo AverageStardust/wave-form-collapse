@@ -6,6 +6,7 @@ declare const Module: EmscriptenModule;
 declare const runtimeInitialized: boolean;
 
 export let free: (ptr: number) => void;
+export let malloc: (size: number) => number;
 export let heap8: Int8Array;
 export let heapU8: Uint8Array;
 export let heap32: Int32Array;
@@ -14,6 +15,7 @@ export let heapU32: Uint32Array;
 export async function init() {
     await moduleReady();
     free = Module._free;
+    malloc = Module._malloc;
     heap8 = Module.HEAP8;
     heapU8 = Module.HEAPU8;
     heap32 = Module.HEAP32;
