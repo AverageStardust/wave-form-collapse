@@ -33,7 +33,10 @@ export class Tileset {
         this.tileLimit = getValue(this.ptr + 4, "i32") * 8;
     }
 
-    addTile(textureId: number, transformation: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number): number {
+    addTile(textureId: number, transformation: number, edge: number): number;
+    addTile(textureId: number, transformation: number, horizontalEdge: number, verticalEdeg: number): number;
+    addTile(textureId: number, transformation: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number): number;
+    addTile(textureId: number, transformation: number, rightEdge: number, topEdge = rightEdge, leftEdge = rightEdge, bottomEdge = topEdge): number {
         const tileId = this.tileCount;
 
         if (tileId >= this.tileLimit)

@@ -13,17 +13,16 @@ async function init() {
         initWrapper()]);
 
     const tileset = Tileset.create();
-    const car0 = tileset.addTile(43, 0, 0, 0, 0, 0);
-    const car90 = tileset.addTile(43, 5, 0, 0, 0, 0);
-    const car180 = tileset.addTile(43, 3, 0, 0, 0, 0);
-    const car270 = tileset.addTile(43, 6, 0, 0, 0, 0);
+    const dirtEdge = 0, roadEdge = 1;
+    const dirt = tileset.addTile(0, 0, dirtEdge);
+    const road = tileset.addTile(8, 0, dirtEdge, roadEdge);
 
     world = World.create(16, tileset);
     world.createChunk(0, 0);
-    world.set(0, 0, car0);
-    world.set(1, 0, car90);
-    world.set(2, 0, car180);
-    world.set(3, 0, car270);
+    world.set(0, 0, dirt);
+    world.set(1, 0, dirt);
+    world.set(2, 0, road);
+    world.set(3, 0, dirt);
     renderer.setWorld(world);
 
     renderer.start();
