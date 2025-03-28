@@ -32,11 +32,11 @@ export class Tileset {
         this.tileLimit = getValue(this.ptr + 4, "i32") * 8;
     }
 
-    addTile(name: string, textureId: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number) {
+    addTile(name: string, textureId: number, transformation: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number) {
         if (this.tileCount >= this.tileLimit)
             throw Error("Tileset has hit tile limit");
 
-        const renderData = textureId;
+        const renderData = (transformation << 16) + textureId;
         tileset_add_tile(this.ptr, this.tileCount, renderData, rightEdge, topEdge, leftEdge, bottomEdge);
 
         this.tileDictonary.set(name, this.tileCount);
