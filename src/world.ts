@@ -1,7 +1,8 @@
 import { heap32 } from "./cwrapper";
 import { List } from "./list";
+import { Tileset } from "./tileset";
 
-let world_create: (chunk_size: number) => number;
+let world_create: (chunk_size: number, tileset_ptr: number) => number;
 let world_get_undisplayed_chunks: (ptr: number, x: number, y: number, width: number, height: number) => number;
 let world_get_chunk_render_data: (worldPtr: number, chunkPtr: number) => number;
 let world_create_chunk: (ptr: number, x: number, y: number) => number;
@@ -15,7 +16,7 @@ const worldRegistry = new FinalizationRegistry((ptr: number) => {
 });
 
 export function init() {
-    world_create = cwrap("world_create", "number", ["number"]);
+    world_create = cwrap("world_create", "number", ["number", "number"]);
     world_get_undisplayed_chunks = cwrap("world_get_undisplayed_chunks", "number", ["number", "number", "number", "number", "number"]);
     world_get_chunk_render_data = cwrap("world_get_chunk_render_data", "number", ["number", "number"]);
     world_create_chunk = cwrap("world_create_chunk", "number", ["number", "number", "number"]);
@@ -28,15 +29,17 @@ export function init() {
 export class World {
     readonly ptr: number;
     readonly chunkSize: number
+    readonly tileset: Tileset;
 
-    static create(chunkSize: number) {
-        const world = new World(world_create(chunkSize));
+    static create(chunkSize: number, tileset: Tileset) {
+        const world = new World(world_create(chunkSize, tileset.ptr), tileset);
         worldRegistry.register(world, world.ptr);
         return world;
     }
 
-    constructor(ptr: number) {
+    constructor(ptr: number, tileset: Tileset) {
         this.ptr = ptr;
+        this.tileset = tileset;
         this.chunkSize = getValue(this.ptr + 0, "i32");;
     }
 
@@ -60,7 +63,10 @@ export class World {
         return new Chunk(world_get_chunk(this.ptr, x, y), this)
     }
 
-    set(x: number, y: number, tile: number): boolean {
+    set(x: number, y: number, tile: number | string): boolean {
+        if (typeof tile == "string") {
+            tile = this.tileset.getTile(tile);
+        }
         const success = world_set(this.ptr, x, y, tile) !== 0;
         return success;
     }
@@ -84,7 +90,11 @@ export class Chunk {
     }
 
     get isDisplayed() {
-        return getValue(this.ptr + 8, "i32");
+        return getValue(this.ptr + 8, "i32") == 1;
+    }
+
+    set isDisplayed(isDisplayed: boolean) {
+        setValue(this.ptr + 8, isDisplayed ? 1 : 0, "i32");
     }
 
     getRenderData(): { data: Int32Array, ptr: number } {

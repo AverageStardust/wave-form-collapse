@@ -30,6 +30,7 @@ typedef struct {
 
 extern EMSCRIPTEN_KEEPALIVE World* world_create(int chunk_size, Tileset* tileset);
 extern EMSCRIPTEN_KEEPALIVE List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height);
+extern EMSCRIPTEN_KEEPALIVE uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk);
 extern EMSCRIPTEN_KEEPALIVE Chunk* world_create_chunk(World* world, int x, int y);
 extern EMSCRIPTEN_KEEPALIVE Chunk* world_get_chunk(World* world, int x, int y);
 extern EMSCRIPTEN_KEEPALIVE int world_set(World* world, int x, int y, int tile);

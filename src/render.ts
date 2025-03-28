@@ -133,6 +133,8 @@ export class Renderer {
                 world.chunkSize, world.chunkSize,
                 gl.RED_INTEGER, gl.INT, data);
 
+            chunk.isDisplayed = true;
+
             this.frameReleventPointers.push(ptr);
         }
     }

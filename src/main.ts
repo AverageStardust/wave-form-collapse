@@ -1,5 +1,6 @@
 import { init as initWrapper } from "./cwrapper";
 import { Renderer } from "./render";
+import { Tileset } from "./tileset";
 import { World } from "./world";
 
 const canvasElement = document.querySelector<HTMLCanvasElement>("#canvas")!
@@ -11,9 +12,12 @@ async function init() {
         renderer.load(),
         initWrapper()]);
 
-    world = World.create(16);
+    const tileset = Tileset.create();
+    tileset.addTile("car", 43, 0, 0, 0, 0);
+
+    world = World.create(16, tileset);
     world.createChunk(0, 0);
-    world.set(0, 0, 32);
+    world.set(0, 0, "car");
     renderer.setWorld(world);
 
     renderer.start();

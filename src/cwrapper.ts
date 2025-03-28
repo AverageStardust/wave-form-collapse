@@ -1,4 +1,5 @@
 import { init as initList } from "./list.ts";
+import { init as initTileset } from "./tileset.ts";
 import { init as initWorld } from "./world.ts";
 
 declare const Module: EmscriptenModule;
@@ -18,6 +19,7 @@ export async function init() {
     heap32 = Module.HEAP32;
     heapU32 = Module.HEAPU32;
     initList();
+    initTileset();
     initWorld();
 }
 
