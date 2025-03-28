@@ -18,7 +18,6 @@ export class Tileset {
     readonly tileLimit: number;
 
     tileCount = 0;
-    tileDictonary: Map<string, number> = new Map();
 
     static create(edgeLimit: number = 128, tileLimit: number = 128): Tileset {
         const tileset = new Tileset(tileset_create((edgeLimit + 7) >> 3, (tileLimit + 7) >> 3));
@@ -32,20 +31,19 @@ export class Tileset {
         this.tileLimit = getValue(this.ptr + 4, "i32") * 8;
     }
 
-    addTile(name: string, textureId: number, transformation: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number) {
-        if (this.tileCount >= this.tileLimit)
+    addTile(textureId: number, transformation: number, rightEdge: number, topEdge: number, leftEdge: number, bottomEdge: number): number {
+        const tileId = this.tileCount;
+
+        if (tileId >= this.tileLimit)
             throw Error("Tileset has hit tile limit");
 
+        if (rightEdge >= this.edgeLimit || topEdge >= this.edgeLimit || leftEdge >= this.edgeLimit || bottomEdge >= this.edgeLimit)
+            throw Error("Tileset has hit edge limit");
+
         const renderData = (transformation << 16) + textureId;
-        tileset_add_tile(this.ptr, this.tileCount, renderData, rightEdge, topEdge, leftEdge, bottomEdge);
+        tileset_add_tile(this.ptr, tileId, renderData, rightEdge, topEdge, leftEdge, bottomEdge);
 
-        this.tileDictonary.set(name, this.tileCount);
         this.tileCount++;
-    }
-
-    getTile(name: string) {
-        const tileId = this.tileDictonary.get(name);
-        if (tileId === undefined) throw Error(`Can't find tile "${name}"`);
         return tileId;
     }
 }

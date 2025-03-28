@@ -63,11 +63,8 @@ export class World {
         return new Chunk(world_get_chunk(this.ptr, x, y), this)
     }
 
-    set(x: number, y: number, tile: number | string): boolean {
-        if (typeof tile == "string") {
-            tile = this.tileset.getTile(tile);
-        }
-        const success = world_set(this.ptr, x, y, tile) !== 0;
+    set(x: number, y: number, tileId: number): boolean {
+        const success = world_set(this.ptr, x, y, tileId) !== 0;
         return success;
     }
 
