@@ -1,8 +1,8 @@
-import { DistributionArea } from "./distribution";
-import { World } from "./world";
+import { Distribution } from "./distribution";
+import { DistributionWorld, World } from "./world";
 
 let superposition_create: (world: number) => number;
-let superposition_set_area: (superposition: number, area: number, x: number, y: number) => void;
+let superposition_select_area: (superposition: number, x: number, y: number, area: number) => void;
 let superposition_collapse: (superposition: number, u: number, v: number, width: number, height: number) => void;
 let superposition_free: (superposition: number) => void;
 
@@ -12,29 +12,56 @@ const superpositionRegistry = new FinalizationRegistry((ptr: number) => {
 
 export function init() {
     superposition_create = cwrap("distribution_create", "number", ["number"]);
-    superposition_set_area = cwrap("distribution_create", null, ["number", "number", "number", "number"]);
+    superposition_select_area = cwrap("superposition_select_area", null, ["number", "number", "number", "number"]);
     superposition_collapse = cwrap("distribution_create", null, ["number", "number", "number", "number", "number"]);
     superposition_free = cwrap("distribution_create", null, ["number"]);
 }
 
-export class Superposition {
+class SuperpositionAbstract {
     readonly ptr: number;
-
-    static create(world: World): Superposition {
-        const superposition = new Superposition(superposition_create(world.ptr));
-        superpositionRegistry.register(superposition, superposition.ptr);
-        return superposition;
-    }
 
     constructor(ptr: number) {
         this.ptr = ptr;
     }
 
-    setArea(area: DistributionArea, x: number, y: number) {
-        superposition_set_area(this.ptr, area.ptr, x, y);
-    }
-
     collapse(u: number, v: number, width: number, height: number) {
         superposition_collapse(this.ptr, u, v, width, height);
+    }
+}
+
+export class SimpleSuperposition extends SuperpositionAbstract {
+    static create(world: World, distribution: Distribution) {
+        const superposition = new SimpleSuperposition(superposition_create(world.ptr));
+
+        const area = distribution.getArea();
+        superposition_select_area(superposition.ptr, 0, 0, area.ptr);
+
+        superpositionRegistry.register(superposition, superposition.ptr);
+        return superposition;
+    }
+}
+
+export class FractalSuperposition extends SuperpositionAbstract {
+    destinationWorld: World;
+    sourceWorld: DistributionWorld;
+
+    static create(destinationWorld: World, sourceWorld: DistributionWorld) {
+        const superposition = new FractalSuperposition(superposition_create(destinationWorld.ptr), destinationWorld, sourceWorld);
+        if (destinationWorld.chunkSize % sourceWorld.distributionSize !== 0)
+            throw Error("Can't build fractal superposition, source distribution tiles and destination chunks are unaligned.");
+        superpositionRegistry.register(superposition, superposition.ptr);
+        return superposition;
+    }
+
+    constructor(ptr: number, destinationWorld: World, sourceWorld: DistributionWorld) {
+        super(ptr);
+        this.destinationWorld = destinationWorld;
+        this.sourceWorld = sourceWorld;
+    }
+
+    selectChunk(x: number, y: number) {
+        const chunkSize = this.destinationWorld.chunkSize;
+        const area = this.sourceWorld.getArea(x * chunkSize, y * chunkSize, chunkSize);
+        superposition_select_area(this.ptr, x * chunkSize, y * chunkSize, area.ptr);
     }
 }

@@ -203,7 +203,7 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 	}
 }
 
-void superposition_set_area(Superposition* superposition, DistributionArea* area, int x, int y) {
+void superposition_select_area(Superposition* superposition, int x, int y, DistributionArea* area) {
 	superposition->x = x;
 	superposition->y = y;
 	superposition->area = area;
