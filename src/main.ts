@@ -28,6 +28,7 @@ async function init() {
     world.set(1, 0, dirt);
     world.set(2, 0, road);
     world.set(3, 0, dirt);
+
     renderer.setWorld(world);
 
     renderer.start();

@@ -1,6 +1,7 @@
 #ifndef SUPERPOSITION_GUARD
 #define SUPERPOSITION_GUARD
 
+#include <emscripten.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,16 +25,20 @@ typedef struct {
 	Hashmap* stale_entropy_tiles;
 	int record_entropy_changes;
 
+	// location of distribution area in world
 	int x;
 	int y;
-	int width;
-	int height;
+
+	// location and width of collapse area in the distribution area
+	int u;
+	int v;
+	int collapse_width;
 
 } Superposition;
 
-int superposition_is_fully_collapsed(Superposition* superposition);
-void superposition_collapse_least(Superposition* superposition);
-void superposition_set_area(Superposition* superposition, DistributionArea* area, int x, int y, int width, int height);
-Superposition* superposition_create(World* world);
+extern EMSCRIPTEN_KEEPALIVE Superposition* superposition_create(World* world);
+extern EMSCRIPTEN_KEEPALIVE void superposition_set_area(Superposition* superposition, DistributionArea* area, int x, int y);
+extern EMSCRIPTEN_KEEPALIVE void superposition_collapse(Superposition* superposition, int u, int v, int width, int height);
+extern EMSCRIPTEN_KEEPALIVE void superposition_free(Superposition* superposition);
 
 #endif

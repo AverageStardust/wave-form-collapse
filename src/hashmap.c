@@ -101,11 +101,8 @@ void hashmap_free(Hashmap* hashmap, void (*free_value)(void* value)) {
 	for (int i = 0; i < hashmap->size; i++) {
 		while (hashmap->nodes[i] != NULL) {
 			void* value = hashmap_delete(hashmap, hashmap->nodes[i]->key);
-			if (free_value == NULL) {
-				free(value);
-			} else {
+			if (free_value != NULL)
 				free_value(value);
-			}
 		}
 	}
 
