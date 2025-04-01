@@ -29,10 +29,11 @@ typedef struct {
 	int x;
 	int y;
 
-	// location and width of collapse area in the distribution area
+	// location and size of collapse area in the distribution area
 	int u;
 	int v;
 	int collapse_width;
+	int collapse_height;
 
 } Superposition;
 

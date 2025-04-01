@@ -30,6 +30,7 @@ typedef struct {
 Entropies* entropies_create(int maxWidth, int maxHeight);
 void entropies_initalize_from_tiles(Entropies* entropies, int width, int height);
 GenerationTile entropies_collapse_least(Entropies* entropies);
+int entropies_is_collapsed(Entropies* entropies, GenerationTile key);
 void entropies_update_entropy(Entropies* entropies, GenerationTile key, Entropy value);
 void entropies_free(Entropies* entropies);
 

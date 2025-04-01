@@ -136,6 +136,10 @@ GenerationTile entropies_collapse_least(Entropies* entropies) {
 	return key;
 }
 
+int entropies_is_collapsed(Entropies* entropies, GenerationTile key) {
+	return entropies->tiles[key] == -1;
+}
+
 void entropies_initalize_from_tiles(Entropies* entropies, int width, int height) {
 	entropies->width = width;
 	entropies->height = height;

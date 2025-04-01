@@ -1,8 +1,7 @@
 #include "bitfield.h"
 
-#define FRAME_SIZE sizeof(BitFieldFrame)
-#define bit_field_storage_type_size(a, b) ((a + sizeof(b) - 1) / sizeof(b))
-#define bit_field_storage_byte_size(a) (bit_field_storage_frame_size(a) * FRAME_SIZE)
+#define bit_field_storage_byte_size(a) (bit_field_storage_frame_size(a) * BIT_FIELD_FRAME_SIZE)
+#define bit_field_storage_type_size(a, b) (bit_field_storage_byte_size(a) / sizeof(b))
 
 BitField field_create(int size) {
 	BitField field = calloc(1, bit_field_storage_byte_size(size));
@@ -53,11 +52,11 @@ BitField field_index_array(BitField array, int elm_size, int index) {
 }
 
 void field_copy(BitField field_dest, BitField field_src, int size) {
-	memcpy(field_dest, field_src, (size + FRAME_SIZE - 1) / FRAME_SIZE);
+	memcpy(field_dest, field_src, bit_field_storage_byte_size(size));
 }
 
 void field_clear(BitField field, int size) {
-	memset(field, 0, (size + FRAME_SIZE - 1) / FRAME_SIZE);
+	memset(field, 0, bit_field_storage_byte_size(size));
 }
 
 void field_or(BitField field_dest, BitField field_src, int size) {

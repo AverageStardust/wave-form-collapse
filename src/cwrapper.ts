@@ -1,5 +1,6 @@
 import { init as initDistribution } from "./distribution.ts";
 import { init as initList } from "./list.ts";
+import { init as initSuperposition } from "./superposition.ts";
 import { init as initTileset } from "./tileset.ts";
 import { init as initWorld } from "./world.ts";
 
@@ -23,6 +24,7 @@ export async function init() {
     heapU32 = Module.HEAPU32;
     initDistribution();
     initList();
+    initSuperposition();
     initTileset();
     initWorld();
 }

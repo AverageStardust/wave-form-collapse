@@ -11,10 +11,10 @@ const superpositionRegistry = new FinalizationRegistry((ptr: number) => {
 });
 
 export function init() {
-    superposition_create = cwrap("distribution_create", "number", ["number"]);
+    superposition_create = cwrap("superposition_create", "number", ["number"]);
     superposition_select_area = cwrap("superposition_select_area", null, ["number", "number", "number", "number"]);
-    superposition_collapse = cwrap("distribution_create", null, ["number", "number", "number", "number", "number"]);
-    superposition_free = cwrap("distribution_create", null, ["number"]);
+    superposition_collapse = cwrap("superposition_collapse", null, ["number", "number", "number", "number", "number"]);
+    superposition_free = cwrap("superposition_free", null, ["number"]);
 }
 
 class SuperpositionAbstract {

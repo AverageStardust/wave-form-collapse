@@ -1,12 +1,12 @@
 import { init as initWrapper } from "./cwrapper";
 import { Distribution } from "./distribution";
 import { Renderer } from "./render";
+import { SimpleSuperposition } from "./superposition";
 import { Tileset } from "./tileset";
 import { World } from "./world";
 
 const canvasElement = document.querySelector<HTMLCanvasElement>("#canvas")!
 const renderer = new Renderer(canvasElement);
-let world: World;
 
 async function init() {
     await Promise.all([
@@ -18,16 +18,15 @@ async function init() {
     const dirt = tileset.addTile(0, 0, dirtEdge);
     const road = tileset.addTile(8, 0, dirtEdge, roadEdge);
 
+    const world = World.create(16, tileset);
+    world.createChunk(0, 0);
+
     const distribution = Distribution.create(tileset);
     distribution.addTile(dirt, 5);
     distribution.addTile(road, 1);
 
-    world = World.create(16, tileset);
-    world.createChunk(0, 0);
-    world.set(0, 0, dirt);
-    world.set(1, 0, dirt);
-    world.set(2, 0, road);
-    world.set(3, 0, dirt);
+    const superposition = SimpleSuperposition.create(world, distribution);
+    superposition.collapse(0, 0, 16, 16);
 
     renderer.setWorld(world);
 

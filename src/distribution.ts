@@ -21,7 +21,7 @@ export function init() {
     distribution_add_tile = cwrap("distribution_add_tile", null, ["number", "number", "number"]);
     distribution_free = cwrap("distribution_free", null, ["number"]);
 
-    distribution_area_create = cwrap("distribution_area_free", "number", ["number", "number", "number"]);
+    distribution_area_create = cwrap("distribution_area_create", "number", ["number", "number", "number"]);
     distribution_area_free = cwrap("distribution_area_free", null, ["number"]);
 }
 
@@ -45,7 +45,7 @@ export class Distribution {
     }
 
     getArea(): DistributionArea {
-        return DistributionArea.create([this], 2e31 - 1, 1);
+        return DistributionArea.create([this], 2 ** 31 - 1, 1);
     }
 }
 
