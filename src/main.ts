@@ -3,6 +3,7 @@ import { Distribution } from "./distribution";
 import { Renderer } from "./render";
 import { SimpleSuperposition } from "./superposition";
 import { Tileset } from "./tileset";
+import { Vector2 } from "./vector2";
 import { World } from "./world";
 
 const canvasElement = document.querySelector<HTMLCanvasElement>("#canvas")!
@@ -16,19 +17,24 @@ async function init() {
     const tileset = Tileset.create();
     const dirtEdge = 0, roadEdge = 1;
     const dirt = tileset.addTile(0, 0, dirtEdge);
-    const road = tileset.addTile(8, 0, dirtEdge, roadEdge);
+    const roadVertical = tileset.addTile(8, 0, dirtEdge, roadEdge);
+    const roadTop = tileset.addTile(12, 0, dirtEdge, dirtEdge, dirtEdge, roadEdge);
+    const roadBottom = tileset.addTile(12, 3, dirtEdge, roadEdge, dirtEdge, dirtEdge);
 
     const world = World.create(16, tileset);
     world.createChunk(0, 0);
 
     const distribution = Distribution.create(tileset);
-    distribution.addTile(dirt, 5);
-    distribution.addTile(road, 1);
+    distribution.addTile(dirt, 10);
+    distribution.addTile(roadVertical, 2);
+    distribution.addTile(roadTop, 1);
+    distribution.addTile(roadBottom, 1);
 
     const superposition = SimpleSuperposition.create(world, distribution);
     superposition.collapse(0, 0, 16, 16);
 
     renderer.setWorld(world);
+    renderer.camera.position.add(new Vector2(8, 8));
 
     renderer.start();
 }

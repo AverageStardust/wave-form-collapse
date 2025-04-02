@@ -169,12 +169,12 @@ Entropies* entropies_create(int maxWidth, int maxHeight) {
 	}
 
 	// 2d array
-	entropies->tiles = malloc(sizeof(int) * maxWidth * maxHeight);
-	entropies->tile_nodes = malloc(sizeof(uint16_t) * maxWidth * maxHeight);
+	entropies->tiles = malloc(sizeof(Entropy) * maxWidth * maxHeight);
+	entropies->tile_nodes = malloc(sizeof(GenerationHeapNode) * maxWidth * maxHeight);
 
 	// heap
-	entropies->keys = malloc(sizeof(uint16_t) * maxWidth * maxHeight);
-	entropies->values = malloc(sizeof(int) * maxWidth * maxHeight);
+	entropies->keys = malloc(sizeof(GenerationTile) * maxWidth * maxHeight);
+	entropies->values = malloc(sizeof(Entropy) * maxWidth * maxHeight);
 
 	if (entropies->tiles == NULL || entropies->tile_nodes == NULL || entropies->keys == NULL || entropies->values == NULL) {
 		fprintf(stderr, "Failed to allocate memory: entropies_create()\n");

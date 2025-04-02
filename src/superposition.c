@@ -25,7 +25,7 @@ void* update_stale_entropies_map_func(uint64_t key, void* value) {
 	distribution_area_select(superposition->area, superposition->u + i, superposition->v + j);
 	Entropy new_entropy = distribution_area_get_shannon_entropy(tile_field);
 
-	entropies_update_entropy(superposition->entropies, i * j * superposition->collapse_width, new_entropy);
+	entropies_update_entropy(superposition->entropies, i + j * superposition->collapse_width, new_entropy);
 
 	// since this is a map function we should return the value of this node
 	return superposition;
@@ -43,7 +43,7 @@ void update_stale_entropies(Superposition* superposition) {
 
 void constrain_neighbours(Superposition* superposition, int u, int v, int skip_direction);
 
-void constrain_field(Superposition* superposition, int i, int j, BitField edge_constraint, int direction) {
+void constrain_field(Superposition* superposition, int i, int j, BitField edge_constraint, int from_direction) {
 	if (i < 0 || j < 0 || i >= superposition->collapse_width || j >= superposition->collapse_height) return;
 	if (entropies_is_collapsed(superposition->entropies, i + j * superposition->collapse_width)) return;
 
@@ -51,7 +51,7 @@ void constrain_field(Superposition* superposition, int i, int j, BitField edge_c
 	BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * superposition->collapse_width);
 
 	int inital_pop = field_popcnt(tile_field, tileset->tile_field_size);
-	tileset_constrain_tile(tileset, tile_field, edge_constraint, direction);
+	tileset_constrain_tile(tileset, tile_field, edge_constraint, from_direction);
 	int final_pop = field_popcnt(tile_field, tileset->tile_field_size);
 
 	// check if there was a change
@@ -62,7 +62,7 @@ void constrain_field(Superposition* superposition, int i, int j, BitField edge_c
 			hashmap_set(superposition->stale_entropy_tiles, hashkey_from_pair(i, j), superposition);
 
 		// propogate change to neighbours
-		constrain_neighbours(superposition, i, j, direction);
+		constrain_neighbours(superposition, i, j, from_direction);
 	}
 }
 
@@ -71,23 +71,23 @@ void constrain_neighbours(Superposition* superposition, int i, int j, int skip_d
 	BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * superposition->collapse_width);
 
 	if (skip_direction != 0) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 0);
-		constrain_field(superposition, i + 1, j, superposition->temp_edge_field, 2);
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 2);
+		constrain_field(superposition, i + 1, j, superposition->temp_edge_field, 0);
 	}
 
 	if (skip_direction != 1) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 1);
-		constrain_field(superposition, i, j - 1, superposition->temp_edge_field, 3);
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 3);
+		constrain_field(superposition, i, j - 1, superposition->temp_edge_field, 1);
 	}
 
 	if (skip_direction != 2) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 2);
-		constrain_field(superposition, i - 1, j, superposition->temp_edge_field, 0);
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 0);
+		constrain_field(superposition, i - 1, j, superposition->temp_edge_field, 2);
 	}
 
 	if (skip_direction != 3) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 3);
-		constrain_field(superposition, i, j + 1, superposition->temp_edge_field, 1);
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 1);
+		constrain_field(superposition, i, j + 1, superposition->temp_edge_field, 3);
 	}
 }
 
@@ -150,7 +150,7 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 	// get naive values for each tile feild
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
-			BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i * j * width);
+			BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * width);
 			get_naive_tile_field(superposition, i, j, tile_field);
 		}
 	}
@@ -159,10 +159,10 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 
 	// contrain tiles baced off horizontal edges
 	for (int i = 0; i < width; i++) {
-		get_naive_tile_field(superposition, i, -1, superposition->temp_tile_field);
+		get_naive_tile_field(superposition, i, 0, superposition->temp_tile_field);
 		constrain_field(superposition, i, 0, superposition->temp_tile_field, 1);
 
-		get_naive_tile_field(superposition, i, height, superposition->temp_tile_field);
+		get_naive_tile_field(superposition, i, height - 1, superposition->temp_tile_field);
 		constrain_field(superposition, i, height - 1, superposition->temp_tile_field, 3);
 	}
 
@@ -170,10 +170,10 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 
 	// contrain tiles baced off vertical edges
 	for (int j = 0; j < height; j++) {
-		get_naive_tile_field(superposition, -1, j, superposition->temp_tile_field);
+		get_naive_tile_field(superposition, 0, j, superposition->temp_tile_field);
 		constrain_field(superposition, 0, j, superposition->temp_tile_field, 2);
 
-		get_naive_tile_field(superposition, width, j, superposition->temp_tile_field);
+		get_naive_tile_field(superposition, width - 1, j, superposition->temp_tile_field);
 		constrain_field(superposition, width - 1, j, superposition->temp_tile_field, 0);
 	}
 
@@ -199,7 +199,7 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 				continue;
 			}
 
-			BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i * j * width);
+			BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * width);
 
 			distribution_area_select(superposition->area, u + i, v + j);
 			Entropy entropy = distribution_area_get_shannon_entropy(tile_field);
