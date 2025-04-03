@@ -120,26 +120,29 @@ void field_set_bit(BitField field, int bit) {
 
 int field_get_rightmost_bit(BitField field, int size, int starting_index) {
 	uint32_t *words = (uint32_t *)field;
-	uint32_t mask = 0xFFFFFFFF << starting_index;
+	int inital_word_index = starting_index / sizeof(uint32_t) / 8;
 
-	for (int i = starting_index / sizeof(uint32_t); i < bit_field_storage_type_size(size, uint32_t); i++) {
-		if (words[i] == 0) continue;
-		int zeros = __builtin_ctz(words[i] & mask);
+	for (int i = inital_word_index; i < bit_field_storage_type_size(size, uint32_t); i++) {
+		uint32_t test_word = words[i];
+		if (i == inital_word_index) {
+			test_word &= 0xFFFFFFFF << starting_index;
+		}
 
-		if (zeros < sizeof(uint32_t))
+		if (test_word == 0) continue;
+
+		int zeros = __builtin_ctz(test_word);
+		if (zeros < sizeof(uint32_t) * 8)
 			return i * sizeof(uint32_t) + zeros;
-
-		mask = 0xFFFFFFFF;
 	}
 
 	return -1;
 }
 
 void field_print(BitField field, int size) {
-	uint32_t *words = (uint32_t *)field;
+	uint8_t *bytes = (uint8_t *)field;
 
-	for (int i = 0; i < bit_field_storage_type_size(size, uint32_t); i++) {
-		printf("%.8x ", words[i]);
+	for (int i = bit_field_storage_byte_size(size) - 1; i >= 0; i--) {
+		printf("%.2x ", bytes[i]);
 	}
 	printf("\n");
 }

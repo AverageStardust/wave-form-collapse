@@ -9,7 +9,7 @@ const WORLD_TEX_MASK = WORLD_TEX_SIZE - 1;
 const TILESET_TILE_SIZE = 16;
 const TILESET_WIDTH = 49;
 
-export class Renderer {
+export class Renderer extends EventTarget {
     canvas: HTMLCanvasElement
     gl: WebGL2RenderingContext
     programInfo!: twgl.ProgramInfo
@@ -23,6 +23,8 @@ export class Renderer {
     frameReleventPointers: number[] = [];
 
     constructor(canvas: HTMLCanvasElement) {
+        super();
+
         this.canvas = canvas;
 
         const gl = canvas.getContext("webgl2");
@@ -101,6 +103,8 @@ export class Renderer {
 
         // release memory used for frame rendering
         for (const ptr of this.frameReleventPointers) freeInst(ptr);
+
+        this.dispatchEvent(new CustomEvent("frame"));
     }
 
     updateWorldTexture() {
