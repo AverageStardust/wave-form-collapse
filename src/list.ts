@@ -33,7 +33,6 @@ export class List {
         listRegistry.register(list, list.ptr);
     }
 
-
     static adopt32(ptr: number) {
         const list = new List(ptr, 4);
         listRegistry.register(list, list.ptr);

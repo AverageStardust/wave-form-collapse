@@ -60,7 +60,6 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 
 	for (int i = byte * 8;;) {
 		int tile = field_get_rightmost_bit(field, distribution->tile_field_size, i);
-		printf("%d: %d\n", tile, distribution->weights[tile]);
 		if (tile == -1 || tile >= byte * 8 + 8) break;
 		i = tile + 1;
 
@@ -68,9 +67,6 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 		if (weight_sum > roll) return tile;
 	}
 
-	field_print(field, distribution->tile_field_size);
-	printf("Byte: %d, Total: %d, Sum: %d\n", byte, byte_weight, weight_sum);
-	fprintf(stderr, "Failed to select tile in distribution_pick_random_from_weighted_byte()\n");
 	exit(1);
 }
 

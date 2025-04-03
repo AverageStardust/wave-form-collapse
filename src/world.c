@@ -75,14 +75,14 @@ uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk) {
 	return render_data;
 }
 
-List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
-	List64* list = list64_create(4);
+List32* world_get_undisplayed_chunks(World* world, int x, int y, int width, int height) {
+	List32* list = list32_create(4);
 
 	for (int u = x; u < x + width; u++) {
 		for (int v = y; v < y + height; v++) {
 			Chunk* chunk = world_get_chunk(world, u, v);
 			if (chunk != NULL && !chunk->is_displayed)
-				list64_push(list, (uint64_t)chunk);
+				list32_push(list, (uint32_t)chunk);
 		}
 	}
 

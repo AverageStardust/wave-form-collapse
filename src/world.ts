@@ -45,7 +45,7 @@ export class World {
     }
 
     getUndisplayedChunks(x: number, y: number, width: number, height: number): Chunk[] {
-        const chunkPtrs = new List(world_get_undisplayed_chunks(this.ptr, x, y, width, height), 8);
+        const chunkPtrs = new List(world_get_undisplayed_chunks(this.ptr, x, y, width, height), 4);
         const chunks = [];
 
         for (let i = 0; i < chunkPtrs.length; i++) {

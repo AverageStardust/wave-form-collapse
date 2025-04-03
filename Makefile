@@ -1,2 +1,2 @@
 dist/cmodule.js: src/main.c src/superposition.c src/world.c src/bitfield.c src/hashmap.c src/list.c src/tileset.c src/distribution.c src/entropies.c src/meminst.c
-	emcc -o public/cmodule.js $^ -O0 -msimd128 -std=gnu11 -Wall -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'getValue', 'setValue', 'addOnInit']" -s "EXPORTED_FUNCTIONS=['_main', '_free', '_malloc']" -s ASSERTIONS=2 -s INITIAL_MEMORY=1048576
+	emcc -o public/cmodule.js $^ -O0 -msimd128 -std=gnu11 -Wall -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'getValue', 'setValue', 'addOnInit']" -s "EXPORTED_FUNCTIONS=['_main', '_free', '_malloc']" -s ASSERTIONS=2 -s INITIAL_MEMORY=2097152 -s STACK_SIZE=262144
