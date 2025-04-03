@@ -135,7 +135,7 @@ int field_get_rightmost_bit(BitField field, int size, int starting_index) {
 			return i * sizeof(uint32_t) + zeros;
 	}
 
-	return -1;
+	return NO_MORE_BITS;
 }
 
 void field_print(BitField field, int size) {

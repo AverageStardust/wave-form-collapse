@@ -26,7 +26,7 @@ int distribution_pick_random_unweighted(BitField field) {
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
-			if (tile == -1) break;
+			if (tile == NO_MORE_BITS) break;
 
 			tile_count++;
 			j = tile + 1;
@@ -41,7 +41,7 @@ int distribution_pick_random_unweighted(BitField field) {
 
 		for (int j = 0;;) {
 			int tile = field_get_rightmost_bit(field, distribution->tile_field_size, j);
-			if (tile == -1) break;
+			if (tile == NO_MORE_BITS) break;
 
 			tile_count++;
 			if (tile_count > roll) return tile;
@@ -60,7 +60,7 @@ int distribution_pick_random_from_weighted_byte(Distribution* distribution, BitF
 
 	for (int i = byte * 8;;) {
 		int tile = field_get_rightmost_bit(field, distribution->tile_field_size, i);
-		if (tile == -1 || tile >= byte * 8 + 8) break;
+		if (tile == NO_MORE_BITS || tile >= byte * 8 + 8) break;
 		i = tile + 1;
 
 		weight_sum += distribution->weights[tile];
@@ -83,7 +83,7 @@ void distribution_area_get_all_tiles(BitField field, int field_size) {
 }
 
 Entropy distribution_area_get_shannon_entropy(BitField field) {
-	Entropy weight_sum = 0, weight_log_weight = 0;
+	Entropy weight_sum = 0, weight_log_weight_sum = 0;
 
 	for (int i = 0; i < set.length; i++) {
 		Distribution* distribution = set.distributions[i];
@@ -91,13 +91,14 @@ Entropy distribution_area_get_shannon_entropy(BitField field) {
 		for (int j = 0; j < distribution->tile_field_size; j++) {
 			int index = j * 256 + field_get_byte(field, j);
 			weight_sum += distribution->weight_table[index];
-			weight_log_weight += distribution->weight_log_weight_table[index];
+			weight_log_weight_sum += distribution->weight_log_weight_table[index];
 		}
 	}
 
 	if (weight_sum == 0) return 0;
 
-	return (int)(logf(weight_sum) * ENTROPY_ONE_POINT) - (weight_log_weight / weight_sum);
+	int log_weight_sum = (int)(logf(weight_sum) * ENTROPY_ONE_POINT);
+	return log_weight_sum - (weight_log_weight_sum / weight_sum);
 }
 
 int distribution_area_pick_random(BitField field) {

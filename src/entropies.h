@@ -21,6 +21,8 @@ typedef struct {
 	GenerationHeapNode heap_size;
 } Entropies;
 
+#define COLLAPSED_ENTROPY -1
+
 // ported from JS
 // holds entropy data for Superposition
 // allow quick to:

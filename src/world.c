@@ -65,8 +65,8 @@ uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk) {
 	uint32_t* render_data = malloc_inst(world->chunk_size * world->chunk_size * sizeof(uint32_t));
 
 	for (int i = 0; i < world->chunk_size * world->chunk_size; i++) {
-		if (chunk->tiles[i] == -1) {
-			render_data[i] = -1;
+		if (chunk->tiles[i] == NULL_TILE) {
+			render_data[i] = NULL_TILE_RENDER_DATA;
 		} else {
 			render_data[i] = world->tileset->render_data_table[chunk->tiles[i]];
 		}

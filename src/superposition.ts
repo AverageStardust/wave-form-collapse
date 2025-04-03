@@ -28,6 +28,21 @@ class SuperpositionAbstract {
         this.destinationWorld = destinationWorld;
     }
 
+    printEntropies() {
+        const entropiesPtr = getValue(this.ptr + 20, "*");
+        const tileEntropies = getValue(entropiesPtr + 0, "i32*");
+        const width = getValue(entropiesPtr + 16, "i32");
+        const height = getValue(entropiesPtr + 20, "i32");
+
+        for (let y = 0; y < height; y++) {
+            const line = [];
+            for (let x = 0; x < width; x++) {
+                line.push(String(getValue(tileEntropies + (x + y * width) * 4, "i32")).padEnd(6, " "));
+            }
+            console.log(`${y}| ` + line.join(""));
+        }
+    }
+
     selectCollapseArea(u: number, v: number, width: number, height: number) {
         superposition_select_collapse_area(this.ptr, u, v, width, height);
     }

@@ -1,5 +1,13 @@
 #include "superposition.h"
 
+typedef enum {
+	NONE = -1,
+	RIGHT,
+	TOP,
+	LEFT,
+	BOTTOM
+} TileEdge;
+
 void superposition_free(Superposition* superposition) {
 	free_inst(superposition->temp_edge_field);
 	free_inst(superposition->temp_tile_field);
@@ -41,9 +49,9 @@ void update_stale_entropies(Superposition* superposition) {
 
 // collapse tile with least entropy
 
-void constrain_neighbours(Superposition* superposition, int u, int v, int skip_direction);
+void constrain_neighbours(Superposition* superposition, int u, int v, TileEdge skip_edge);
 
-void constrain_field(Superposition* superposition, int i, int j, BitField edge_constraint, int from_direction) {
+void constrain_field(Superposition* superposition, int i, int j, BitField edge_constraint, int from_edge) {
 	if (i < 0 || j < 0 || i >= superposition->collapse_width || j >= superposition->collapse_height) return;
 	if (entropies_is_collapsed(superposition->entropies, i + j * superposition->collapse_width)) return;
 
@@ -51,7 +59,7 @@ void constrain_field(Superposition* superposition, int i, int j, BitField edge_c
 	BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * superposition->collapse_width);
 
 	int inital_pop = field_popcnt(tile_field, tileset->tile_field_size);
-	tileset_constrain_tile(tileset, tile_field, edge_constraint, from_direction);
+	tileset_constrain_tile(tileset, tile_field, edge_constraint, from_edge);
 	int final_pop = field_popcnt(tile_field, tileset->tile_field_size);
 
 	// check if there was a change
@@ -62,32 +70,32 @@ void constrain_field(Superposition* superposition, int i, int j, BitField edge_c
 			hashmap_set(superposition->stale_entropy_tiles, hashkey_from_pair(i, j), superposition);
 
 		// propogate change to neighbours
-		constrain_neighbours(superposition, i, j, from_direction);
+		constrain_neighbours(superposition, i, j, from_edge);
 	}
 }
 
-void constrain_neighbours(Superposition* superposition, int i, int j, int skip_direction) {
+void constrain_neighbours(Superposition* superposition, int i, int j, TileEdge skip_edge) {
 	Tileset* tileset = superposition->world->tileset;
 	BitField tile_field = field_index_array(superposition->fields, tileset->tile_field_size, i + j * superposition->collapse_width);
 
-	if (skip_direction != 0) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 2);
-		constrain_field(superposition, i + 1, j, superposition->temp_edge_field, 0);
+	if (skip_edge != RIGHT) {
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, RIGHT);
+		constrain_field(superposition, i + 1, j, superposition->temp_edge_field, LEFT);
 	}
 
-	if (skip_direction != 1) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 3);
-		constrain_field(superposition, i, j - 1, superposition->temp_edge_field, 1);
+	if (skip_edge != TOP) {
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, TOP);
+		constrain_field(superposition, i, j + 1, superposition->temp_edge_field, BOTTOM);
 	}
 
-	if (skip_direction != 2) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 0);
-		constrain_field(superposition, i - 1, j, superposition->temp_edge_field, 2);
+	if (skip_edge != LEFT) {
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, LEFT);
+		constrain_field(superposition, i - 1, j, superposition->temp_edge_field, RIGHT);
 	}
 
-	if (skip_direction != 3) {
-		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, 1);
-		constrain_field(superposition, i, j + 1, superposition->temp_edge_field, 3);
+	if (skip_edge != BOTTOM) {
+		tileset_find_tile_edge(tileset, tile_field, superposition->temp_edge_field, BOTTOM);
+		constrain_field(superposition, i, j - 1, superposition->temp_edge_field, TOP);
 	}
 }
 
@@ -114,7 +122,7 @@ void collapse_least(Superposition* superposition) {
 	field_set_bit(tile_field, tile_id);
 
 	// propogate change to neighbours
-	constrain_neighbours(superposition, i, j, -1);
+	constrain_neighbours(superposition, i, j, NONE);
 
 	// clean up entropies for next pick
 	update_stale_entropies(superposition);
@@ -124,7 +132,7 @@ void get_naive_tile_field(Superposition* superposition, int i, int j, BitField t
 	int tile_id = world_get(superposition->world, superposition->x + superposition->u + i, superposition->y + superposition->v + j);
 	Tileset* tileset = superposition->world->tileset;
 
-	if (tile_id == -1) {
+	if (tile_id == NULL_TILE) {
 		distribution_area_select(superposition->area, superposition->u + i, superposition->u + j);
 		distribution_area_get_all_tiles(tile_field, tileset->tile_field_size);
 	} else {
@@ -165,25 +173,29 @@ void superposition_select_collapse_area(Superposition* superposition, int u, int
 	// contrain tiles baced off horizontal edges
 	for (int i = 0; i < width; i++) {
 		get_naive_tile_field(superposition, i, 0, superposition->temp_tile_field);
-		constrain_field(superposition, i, 0, superposition->temp_tile_field, 1);
+		tileset_find_tile_edge(tileset, superposition->temp_tile_field, superposition->temp_edge_field, TOP);
+		constrain_field(superposition, i, 0, superposition->temp_edge_field, BOTTOM);
 
 		get_naive_tile_field(superposition, i, height - 1, superposition->temp_tile_field);
-		constrain_field(superposition, i, height - 1, superposition->temp_tile_field, 3);
+		tileset_find_tile_edge(tileset, superposition->temp_tile_field, superposition->temp_edge_field, BOTTOM);
+		constrain_field(superposition, i, height - 1, superposition->temp_edge_field, TOP);
 	}
 
 	// contrain tiles baced off vertical edges
 	for (int j = 0; j < height; j++) {
 		get_naive_tile_field(superposition, 0, j, superposition->temp_tile_field);
-		constrain_field(superposition, 0, j, superposition->temp_tile_field, 2);
+		tileset_find_tile_edge(tileset, superposition->temp_tile_field, superposition->temp_edge_field, RIGHT);
+		constrain_field(superposition, 0, j, superposition->temp_edge_field, LEFT);
 
 		get_naive_tile_field(superposition, width - 1, j, superposition->temp_tile_field);
-		constrain_field(superposition, width - 1, j, superposition->temp_tile_field, 0);
+		tileset_find_tile_edge(tileset, superposition->temp_tile_field, superposition->temp_edge_field, LEFT);
+		constrain_field(superposition, width - 1, j, superposition->temp_edge_field, RIGHT);
 	}
 
 	// contrain tiles baced off eachother
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height; j++) {
-			constrain_neighbours(superposition, i, j, -1);
+	for (int j = 0; j < height; j++) {
+		for (int i = 0; i < width; i++) {
+			constrain_neighbours(superposition, i, j, NONE);
 		}
 	}
 
@@ -192,9 +204,9 @@ void superposition_select_collapse_area(Superposition* superposition, int u, int
 		for (int j = 0; j < height; j++) {
 			int tile_id = world_get(superposition->world, superposition->x + u + i, superposition->y + v + j);
 
-			if (tile_id != -1) {
+			if (tile_id != NULL_TILE) {
 				// already collapsed, skip entropy calculation
-				superposition->entropies->tiles[i + j * width] = -1;
+				superposition->entropies->tiles[i + j * width] = COLLAPSED_ENTROPY;
 				continue;
 			}
 

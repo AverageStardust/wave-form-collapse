@@ -11,6 +11,7 @@
 #include "tileset.h"
 
 #define NULL_TILE -1
+#define NULL_TILE_RENDER_DATA 0xFFFFFFFF
 
 typedef struct {
 	int x;

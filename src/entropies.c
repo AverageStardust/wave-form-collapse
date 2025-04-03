@@ -110,7 +110,7 @@ void entropies_heapify(Entropies* entropies) {
 }
 
 void entropies_update_entropy(Entropies* entropies, GenerationTile key, Entropy value) {
-	int wasCollapsed = entropies->tiles[key] < 0;
+	int wasCollapsed = entropies->tiles[key] == COLLAPSED_ENTROPY;
 
 	entropies->tiles[key] = value;
 	if (wasCollapsed) {
@@ -123,7 +123,7 @@ void entropies_update_entropy(Entropies* entropies, GenerationTile key, Entropy 
 GenerationTile entropies_collapse_least(Entropies* entropies) {
 	GenerationTile key = entropies->keys[1];
 
-	entropies->tiles[key] = -1;
+	entropies->tiles[key] = COLLAPSED_ENTROPY;
 
 	GenerationTile last_key = entropies->keys[entropies->heap_size];
 	entropies->keys[1] = last_key;
@@ -137,7 +137,7 @@ GenerationTile entropies_collapse_least(Entropies* entropies) {
 }
 
 int entropies_is_collapsed(Entropies* entropies, GenerationTile key) {
-	return entropies->tiles[key] == -1;
+	return entropies->tiles[key] == COLLAPSED_ENTROPY;
 }
 
 void entropies_initalize_from_tiles(Entropies* entropies, int width, int height) {
@@ -148,7 +148,7 @@ void entropies_initalize_from_tiles(Entropies* entropies, int width, int height)
 	uint16_t node = 1;
 	for (uint16_t key = 0; key < size; key++) {
 		int entropy = entropies->tiles[key];
-		if (entropy < 0) continue;
+		if (entropy == COLLAPSED_ENTROPY) continue;
 
 		entropies->keys[node] = key;
 		entropies->tile_nodes[key] = node;
