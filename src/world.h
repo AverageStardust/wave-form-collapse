@@ -3,11 +3,11 @@
 
 #include <emscripten.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "bitfield.h"
 #include "hashmap.h"
 #include "list.h"
+#include "meminst.h"
 #include "tileset.h"
 
 #define NULL_TILE -1

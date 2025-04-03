@@ -1,5 +1,6 @@
 import { init as initWrapper } from "./cwrapper";
 import { Distribution } from "./distribution";
+import { getMemoryUsage } from "./meminst";
 import { Renderer } from "./render";
 import { SimpleSuperposition } from "./superposition";
 import { Tileset } from "./tileset";
@@ -14,7 +15,7 @@ async function init() {
         renderer.load(),
         initWrapper()]);
 
-    const tileset = Tileset.create();
+    const tileset = Tileset.create(8, 8);
     const dirtEdge = 0, roadEdge = 1;
     const dirt = tileset.addTile(0, 0, dirtEdge);
     const roadVertical = tileset.addTile(8, 0, dirtEdge, roadEdge);
@@ -31,11 +32,11 @@ async function init() {
     distribution.addTile(roadBottom, 1);
 
     const superposition = SimpleSuperposition.create(world, distribution);
-    superposition.collapse(0, 0, 16, 16);
+    superposition.selectCollapseArea(0, 0, 16, 16);
+    superposition.collapse(256);
 
     renderer.setWorld(world);
     renderer.camera.position.add(new Vector2(8, 8));
-
     renderer.start();
 }
 

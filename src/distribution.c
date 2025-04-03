@@ -7,15 +7,15 @@ struct {
 } set;
 
 void distribution_free(Distribution* distribution) {
-	free(distribution->weights);
-	free(distribution->weight_table);
-	free(distribution->weight_log_weight_table);
-	free(distribution);
+	free_inst(distribution->weights);
+	free_inst(distribution->weight_table);
+	free_inst(distribution->weight_log_weight_table);
+	free_inst(distribution);
 }
 
 void distribution_area_free(DistributionArea* area) {
-	free(area->distributions);
-	free(area);
+	free_inst(area->distributions);
+	free_inst(area);
 }
 
 int distribution_pick_random_unweighted(BitField field) {
@@ -175,7 +175,7 @@ void distribution_add_tile(Distribution* distribution, int tile, Entropy weight)
 }
 
 DistributionArea* distribution_area_create(Distribution** distributions, int distribution_size, int distributions_width) {
-	DistributionArea* area = malloc(sizeof(DistributionArea));
+	DistributionArea* area = malloc_inst(sizeof(DistributionArea));
 	if (area == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_area_create()\n");
 		exit(1);
@@ -189,17 +189,17 @@ DistributionArea* distribution_area_create(Distribution** distributions, int dis
 }
 
 Distribution* distribution_create(int tile_field_size) {
-	Distribution* distribution = malloc(sizeof(Distribution));
+	Distribution* distribution = malloc_inst(sizeof(Distribution));
 
 	if (distribution == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_create()\n");
 		exit(1);
 	}
 
-	distribution->weights = calloc(tile_field_size * 256, sizeof(Entropy));
-	distribution->weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
-	distribution->weight_log_weight_table = calloc(tile_field_size * 256, sizeof(Entropy));
-	distribution->all_tiles = calloc(1, tile_field_size);
+	distribution->weights = calloc_inst(tile_field_size * 256, sizeof(Entropy));
+	distribution->weight_table = calloc_inst(tile_field_size * 256, sizeof(Entropy));
+	distribution->weight_log_weight_table = calloc_inst(tile_field_size * 256, sizeof(Entropy));
+	distribution->all_tiles = calloc_inst(1, tile_field_size);
 
 	if (distribution->weights == NULL || distribution->weight_table == NULL || distribution->weight_log_weight_table == NULL || distribution->all_tiles == NULL) {
 		fprintf(stderr, "Failed to allocate memory: distribution_create()\n");

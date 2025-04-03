@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "distribution.h"
+#include "meminst.h"
 
 typedef uint32_t GenerationHeapNode;
 typedef uint32_t GenerationTile;

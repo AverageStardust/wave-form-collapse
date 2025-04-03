@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "meminst.h"
+
 typedef struct HashmapNode {
 	struct HashmapNode* next;
 	void* value;

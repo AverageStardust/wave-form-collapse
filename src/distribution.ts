@@ -1,4 +1,4 @@
-import { malloc } from "./cwrapper";
+import { mallocInst } from "./meminst";
 import { Tileset } from "./tileset";
 
 let distribution_create: (tile_field_size: number) => number;
@@ -31,7 +31,7 @@ export class Distribution {
 
     static create(tileset: Tileset): Distribution {
         const distribution = new Distribution(distribution_create((tileset.tileLimit + 7) >> 3), tileset);
-        distributionRegistry.register(distribution, distribution.ptr);
+        distributionRegistry.register(distribution, distribution.ptr, distribution);
         return distribution;
     }
 
@@ -47,25 +47,37 @@ export class Distribution {
     getArea(): DistributionArea {
         return DistributionArea.create([this], 2 ** 31 - 1, 1);
     }
+
+    free() {
+        distributionRegistry.unregister(this);
+        distribution_free(this.ptr);
+    }
 }
 
 export class DistributionArea {
-    ptr: number;
+    readonly ptr: number;
+    readonly distributions: Distribution[]; // kept to stop premature deallocation
 
     static create(distributions: Distribution[], distributionSize: number, distributionsWidth: number): DistributionArea {
-        const distributionsPtr = malloc(distributions.length * 8);
+        const distributionsPtr = mallocInst(distributions.length * 8);
 
         for (let i = 0; i < distributions.length; i++) {
             setValue(distributionsPtr + i * 8, distributions[i].ptr, "*");
         }
 
-        const area = new DistributionArea(distribution_area_create(distributionsPtr, distributionSize, distributionsWidth));
-        distributionAreaRegistry.register(area, area.ptr);
+        const area = new DistributionArea(distribution_area_create(distributionsPtr, distributionSize, distributionsWidth), distributions);
+        distributionAreaRegistry.register(area, area.ptr, area);
 
         return area;
     }
 
-    constructor(ptr: number) {
+    constructor(ptr: number, distributions: Distribution[]) {
         this.ptr = ptr;
+        this.distributions = distributions;
+    }
+
+    free() {
+        distributionAreaRegistry.unregister(this);
+        distribution_area_free(this.ptr);
     }
 }

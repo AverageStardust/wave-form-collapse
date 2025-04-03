@@ -34,7 +34,7 @@ export class World {
 
     static create(chunkSize: number, tileset: Tileset, _?: number): World {
         const world = new World(world_create(chunkSize, tileset.ptr), tileset);
-        worldRegistry.register(world, world.ptr);
+        worldRegistry.register(world, world.ptr, world);
         return world;
     }
 
@@ -71,6 +71,11 @@ export class World {
 
     get(x: number, y: number): number {
         return world_get(this.ptr, x, y);
+    }
+
+    free() {
+        worldRegistry.unregister(this);
+        world_free(this.ptr);
     }
 }
 

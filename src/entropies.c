@@ -8,13 +8,13 @@
 // these two data structures are updated in sync
 
 void entropies_free(Entropies* entropies) {
-	free(entropies->tiles);
-	free(entropies->tile_nodes);
+	free_inst(entropies->tiles);
+	free_inst(entropies->tile_nodes);
 
-	free(entropies->keys);
-	free(entropies->values);
+	free_inst(entropies->keys);
+	free_inst(entropies->values);
 
-	free(entropies);
+	free_inst(entropies);
 }
 
 void entropies_heap_swim(Entropies* entropies, GenerationHeapNode node) {
@@ -161,7 +161,7 @@ void entropies_initalize_from_tiles(Entropies* entropies, int width, int height)
 }
 
 Entropies* entropies_create(int maxWidth, int maxHeight) {
-	Entropies* entropies = malloc(sizeof(Entropies));
+	Entropies* entropies = malloc_inst(sizeof(Entropies));
 
 	if (entropies == NULL) {
 		fprintf(stderr, "Failed to allocate memory: entropies_create()\n");
@@ -169,12 +169,12 @@ Entropies* entropies_create(int maxWidth, int maxHeight) {
 	}
 
 	// 2d array
-	entropies->tiles = malloc(sizeof(Entropy) * maxWidth * maxHeight);
-	entropies->tile_nodes = malloc(sizeof(GenerationHeapNode) * maxWidth * maxHeight);
+	entropies->tiles = malloc_inst(sizeof(Entropy) * maxWidth * maxHeight);
+	entropies->tile_nodes = malloc_inst(sizeof(GenerationHeapNode) * maxWidth * maxHeight);
 
 	// heap
-	entropies->keys = malloc(sizeof(GenerationTile) * maxWidth * maxHeight);
-	entropies->values = malloc(sizeof(Entropy) * maxWidth * maxHeight);
+	entropies->keys = malloc_inst(sizeof(GenerationTile) * maxWidth * maxHeight);
+	entropies->values = malloc_inst(sizeof(Entropy) * maxWidth * maxHeight);
 
 	if (entropies->tiles == NULL || entropies->tile_nodes == NULL || entropies->keys == NULL || entropies->values == NULL) {
 		fprintf(stderr, "Failed to allocate memory: entropies_create()\n");

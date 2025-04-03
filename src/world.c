@@ -1,13 +1,13 @@
 #include "world.h"
 
 void free_chunk(void* chunk) {
-	free(((Chunk*)chunk)->tiles);
-	free((Chunk*)chunk);
+	free_inst(((Chunk*)chunk)->tiles);
+	free_inst((Chunk*)chunk);
 }
 
 void world_free(World* world) {
 	hashmap_free(world->chunks, free_chunk);
-	free(world);
+	free_inst(world);
 }
 
 int world_get(World* world, int x, int y) {
@@ -32,14 +32,14 @@ Chunk* world_get_chunk(World* world, int x, int y) {
 }
 
 Chunk* world_create_chunk(World* world, int x, int y) {
-	Chunk* chunk = malloc(sizeof(Chunk));
+	Chunk* chunk = malloc_inst(sizeof(Chunk));
 
 	if (chunk == NULL) {
 		fprintf(stderr, "Failed to allocate memory: world_create_chunk()\n");
 		exit(1);
 	}
 
-	chunk->tiles = malloc(world->chunk_size * world->chunk_size * sizeof(int));
+	chunk->tiles = malloc_inst(world->chunk_size * world->chunk_size * sizeof(int));
 
 	if (chunk->tiles == NULL) {
 		fprintf(stderr, "Failed to allocate memory: world_create_chunk()\n");
@@ -62,7 +62,8 @@ Chunk* world_create_chunk(World* world, int x, int y) {
 }
 
 uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk) {
-	uint32_t* render_data = malloc(world->chunk_size * world->chunk_size * sizeof(uint32_t));
+	uint32_t* render_data = malloc_inst(world->chunk_size * world->chunk_size * sizeof(uint32_t));
+
 	for (int i = 0; i < world->chunk_size * world->chunk_size; i++) {
 		if (chunk->tiles[i] == -1) {
 			render_data[i] = -1;
@@ -70,6 +71,7 @@ uint32_t* world_get_chunk_render_data(World* world, Chunk* chunk) {
 			render_data[i] = world->tileset->render_data_table[chunk->tiles[i]];
 		}
 	}
+
 	return render_data;
 }
 
@@ -88,7 +90,7 @@ List64* world_get_undisplayed_chunks(World* world, int x, int y, int width, int 
 }
 
 World* world_create(int chunk_size, Tileset* tileset) {
-	World* world = malloc(sizeof(World));
+	World* world = malloc_inst(sizeof(World));
 
 	if (world == NULL) {
 		fprintf(stderr, "Failed to allocate memory: world_create()\n");

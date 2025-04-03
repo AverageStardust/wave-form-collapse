@@ -1,7 +1,8 @@
 #include <emscripten.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
+
+#include "meminst.h"
 
 typedef struct {
 	int length;

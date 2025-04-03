@@ -18,7 +18,7 @@ uint32_t jenkins_hash(int key_length, uint8_t* key) {
 }
 
 HashmapNode* hashmap_create_node(uint64_t key, void* value) {
-	HashmapNode* node = malloc(sizeof(HashmapNode));
+	HashmapNode* node = malloc_inst(sizeof(HashmapNode));
 
 	if (node == NULL) {
 		fprintf(stderr, "Failed to allocate memory: hashmap_create_node()\n");
@@ -83,7 +83,7 @@ void hashmap_grow_bucket(Hashmap* hashmap, HashmapNode* node, int old_size, int 
 }
 
 void hashmap_grow(Hashmap* hashmap, int new_size) {
-	hashmap->nodes = realloc(hashmap->nodes, new_size * sizeof(HashmapNode*));
+	hashmap->nodes = realloc_inst(hashmap->nodes, new_size * sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
 		fprintf(stderr, "Failed to allocate memory: hashmap_grow()\n");
@@ -106,16 +106,16 @@ void hashmap_free(Hashmap* hashmap, void (*free_value)(void* value)) {
 		}
 	}
 
-	free(hashmap->nodes);
-	free(hashmap);
+	free_inst(hashmap->nodes);
+	free_inst(hashmap);
 }
 
 void hashmap_clear(Hashmap* hashmap, int new_size) {
 	hashmap->size = new_size;
 	hashmap->collisions = 0;
 
-	free(hashmap->nodes);
-	hashmap->nodes = calloc(new_size, sizeof(HashmapNode*));
+	free_inst(hashmap->nodes);
+	hashmap->nodes = calloc_inst(new_size, sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
 		fprintf(stderr, "Failed to allocate memory: hashmap_clear()\n");
@@ -139,7 +139,7 @@ void* hashmap_delete(Hashmap* hashmap, uint64_t key) {
 	HashmapNode* node = hashmap_remove_node(hashmap, key, hash % hashmap->size);
 	void* value = node->value;
 
-	free(node);
+	free_inst(node);
 
 	return value;
 }
@@ -209,7 +209,7 @@ void* hashmap_set(Hashmap* hashmap, uint64_t key, void* value) {
 }
 
 Hashmap* hashmap_create(int inital_size) {
-	Hashmap* hashmap = malloc(sizeof(Hashmap));
+	Hashmap* hashmap = malloc_inst(sizeof(Hashmap));
 
 	if (hashmap == NULL) {
 		fprintf(stderr, "Failed to allocate memory: hashmap_create()\n");
@@ -218,7 +218,7 @@ Hashmap* hashmap_create(int inital_size) {
 
 	hashmap->size = inital_size;
 	hashmap->collisions = 0;
-	hashmap->nodes = calloc(inital_size, sizeof(HashmapNode*));
+	hashmap->nodes = calloc_inst(inital_size, sizeof(HashmapNode*));
 
 	if (hashmap->nodes == NULL) {
 		fprintf(stderr, "Failed to allocate memory: hashmap_create()\n");

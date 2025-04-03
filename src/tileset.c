@@ -1,9 +1,10 @@
 #include "tileset.h"
 
 void tileset_free(Tileset* tileset) {
-	free(tileset->tile_table);
-	free(tileset->edge_table);
-	free(tileset);
+	free_inst(tileset->render_data_table);
+	free_inst(tileset->tile_table);
+	free_inst(tileset->edge_table);
+	free_inst(tileset);
 }
 
 void tileset_find_tile_edge(Tileset* tileset, BitField tile_field, BitField edge_field, int direction) {
@@ -91,16 +92,16 @@ Tileset* tileset_create(int edge_field_size, int tile_field_size) {
 	int tile_table_direction_size = edge_field_size * 256 * tile_field_size;
 	int edge_table_byte_size = 256 * 4 * edge_field_size;
 
-	Tileset* tileset = malloc(sizeof(Tileset));
+	Tileset* tileset = malloc_inst(sizeof(Tileset));
 
 	if (tileset == NULL) {
 		fprintf(stderr, "Failed to allocate memory: tileset_create()\n");
 		exit(1);
 	}
 
-	tileset->tile_table = calloc(4 * tile_table_direction_size, sizeof(BitFieldFrame));
-	tileset->edge_table = calloc(tile_field_size * edge_table_byte_size, sizeof(BitFieldFrame));
-	tileset->render_data_table = malloc(tile_field_size * 8 * sizeof(uint32_t));
+	tileset->tile_table = calloc_inst(4 * tile_table_direction_size, sizeof(BitFieldFrame));
+	tileset->edge_table = calloc_inst(tile_field_size * edge_table_byte_size, sizeof(BitFieldFrame));
+	tileset->render_data_table = malloc_inst(tile_field_size * 8 * sizeof(uint32_t));
 
 	if (tileset->tile_table == NULL || tileset->edge_table == NULL || tileset->render_data_table == NULL) {
 		fprintf(stderr, "Failed to allocate memory: tileset_create()\n");

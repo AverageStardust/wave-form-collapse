@@ -23,7 +23,7 @@ export class Tileset {
 
     static create(edgeLimit: number = 128, tileLimit: number = 128): Tileset {
         const tileset = new Tileset(tileset_create((edgeLimit + 7) >> 3, (tileLimit + 7) >> 3));
-        tilesetRegistry.register(tileset, tileset.ptr);
+        tilesetRegistry.register(tileset, tileset.ptr, tileset);
         return tileset;
     }
 
@@ -50,6 +50,11 @@ export class Tileset {
 
         this.tileCount++;
         return tileId;
+    }
+
+    free() {
+        tilesetRegistry.unregister(this);
+        tileset_free(this.ptr);
     }
 }
 

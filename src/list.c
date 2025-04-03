@@ -1,15 +1,15 @@
 #include "list.h"
 
 void list_free(ListAbstract* list) {
-	free(list->elements);
-	free(list);
+	free_inst(list->elements);
+	free_inst(list);
 }
 
 void list_allocate_length(ListAbstract* list, int min_length, int element_size) {
 	if (list->allocated_length >= min_length) return;
 
 	list->allocated_length *= 2;
-	list->elements = realloc(list->elements, list->allocated_length * element_size);
+	list->elements = realloc_inst(list->elements, list->allocated_length * element_size);
 
 	if (list == NULL) {
 		fprintf(stderr, "Failed to allocate memory: list_allocate_length()\n");
@@ -40,14 +40,14 @@ uint64_t list64_at(List64* list, int index) {
 }
 
 ListAbstract* list_create(int element_size, int inital_allocated_length) {
-	ListAbstract* list = malloc(sizeof(ListAbstract));
+	ListAbstract* list = malloc_inst(sizeof(ListAbstract));
 
 	if (list == NULL) {
 		fprintf(stderr, "Failed to allocate memory: list_create()\n");
 		exit(1);
 	}
 
-	list->elements = malloc(inital_allocated_length * element_size);
+	list->elements = malloc_inst(inital_allocated_length * element_size);
 
 	if (list->elements == NULL) {
 		fprintf(stderr, "Failed to allocate memory: list_create()\n");

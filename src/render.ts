@@ -1,7 +1,7 @@
 import * as twgl from "twgl.js";
 import { Camera } from "./camera";
-import { free } from "./cwrapper";
 import { World } from "./world";
+import { freeInst } from "./meminst";
 
 const WORLD_TEX_BITS = 8;
 const WORLD_TEX_SIZE = 1 << WORLD_TEX_BITS;
@@ -96,11 +96,11 @@ export class Renderer {
         twgl.setUniforms(this.programInfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo);
 
+        // frame boundry
         requestAnimationFrame(this.frame.bind(this));
-        gl.flush(); // just in case
 
         // release memory used for frame rendering
-        for (const ptr of this.frameReleventPointers) free(ptr);
+        for (const ptr of this.frameReleventPointers) freeInst(ptr);
     }
 
     updateWorldTexture() {

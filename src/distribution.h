@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "bitfield.h"
+#include "meminst.h"
 
 // entropy is calculated with fixed point math, this is the integer value representing one
 #define ENTROPY_ONE_POINT 1000

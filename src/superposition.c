@@ -1,14 +1,14 @@
 #include "superposition.h"
 
 void superposition_free(Superposition* superposition) {
-	free(superposition->temp_edge_field);
-	free(superposition->temp_tile_field);
-	free(superposition->fields);
+	free_inst(superposition->temp_edge_field);
+	free_inst(superposition->temp_tile_field);
+	free_inst(superposition->fields);
 
 	entropies_free(superposition->entropies);
 	hashmap_free(superposition->stale_entropy_tiles, NULL);
 
-	free(superposition);
+	free_inst(superposition);
 }
 
 // update the entory for one tile, the value of this node in the hashmap is the superposition
@@ -133,7 +133,16 @@ void get_naive_tile_field(Superposition* superposition, int i, int j, BitField t
 	}
 }
 
-void superposition_collapse(Superposition* superposition, int u, int v, int width, int height) {
+int superposition_collapse_tiles(Superposition* superposition, int amount) {
+	for (int i = 0; i < amount; i++) {
+		if (superposition->entropies->heap_size <= 0) return 1;
+		collapse_least(superposition);
+	}
+
+	return 0;
+}
+
+void superposition_select_collapse_area(Superposition* superposition, int u, int v, int width, int height) {
 	superposition->u = u;
 	superposition->v = v;
 	superposition->collapse_width = width;
@@ -145,8 +154,6 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 	// disable entropy while we construct the inital feilds
 	superposition->record_entropy_changes = 0;
 
-	printf("a\n");
-
 	// get naive values for each tile feild
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
@@ -154,8 +161,6 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 			get_naive_tile_field(superposition, i, j, tile_field);
 		}
 	}
-
-	printf("b\n");
 
 	// contrain tiles baced off horizontal edges
 	for (int i = 0; i < width; i++) {
@@ -166,8 +171,6 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 		constrain_field(superposition, i, height - 1, superposition->temp_tile_field, 3);
 	}
 
-	printf("c\n");
-
 	// contrain tiles baced off vertical edges
 	for (int j = 0; j < height; j++) {
 		get_naive_tile_field(superposition, 0, j, superposition->temp_tile_field);
@@ -177,16 +180,12 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 		constrain_field(superposition, width - 1, j, superposition->temp_tile_field, 0);
 	}
 
-	printf("d\n");
-
 	// contrain tiles baced off eachother
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
 			constrain_neighbours(superposition, i, j, -1);
 		}
 	}
-
-	printf("e\n");
 
 	// calculate entropies for each tile
 	for (int i = 0; i < width; i++) {
@@ -208,28 +207,20 @@ void superposition_collapse(Superposition* superposition, int u, int v, int widt
 		}
 	}
 
-	printf("f\n");
-
 	entropies_initalize_from_tiles(superposition->entropies, width, height);
 
 	hashmap_clear(superposition->stale_entropy_tiles, 32);
 	superposition->record_entropy_changes = 1;
-
-	printf("g\n");
-
-	while (superposition->entropies->heap_size > 0) {
-		collapse_least(superposition);
-	}
 }
 
-void superposition_select_area(Superposition* superposition, int x, int y, DistributionArea* area) {
+void superposition_select_distribution_area(Superposition* superposition, int x, int y, DistributionArea* area) {
 	superposition->x = x;
 	superposition->y = y;
 	superposition->area = area;
 }
 
 Superposition* superposition_create(World* world) {
-	Superposition* superposition = malloc(sizeof(Superposition));
+	Superposition* superposition = malloc_inst(sizeof(Superposition));
 
 	if (superposition == NULL) {
 		fprintf(stderr, "Failed to allocate memory: superposition_create()\n");

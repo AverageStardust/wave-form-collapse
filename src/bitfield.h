@@ -7,6 +7,8 @@
 #include <string.h>
 #include <wasm_simd128.h>
 
+#include "meminst.h"
+
 #define BIT_FIELD_FRAME_SIZE 16
 #define bit_field_storage_frame_size(a) ((a + BIT_FIELD_FRAME_SIZE - 1) / BIT_FIELD_FRAME_SIZE)
 
